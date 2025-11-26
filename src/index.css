@@ -1,1 +1,63 @@
 @import "tailwindcss";
+
+/* Glowing cursor effect for glass containers */
+.glass-glow {
+  cursor: pointer;
+  position: relative;
+}
+
+.glass-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(16, 185, 129, 0.4),
+    transparent 40%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glass-glow:hover::before {
+  opacity: 1;
+}
+
+/* Interior cursor spotlight glow */
+.cursor-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.cursor-glow::after {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(16, 185, 129, 0.1) 0%,
+    rgba(20, 184, 166, 0.05) 30%,
+    transparent 70%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  left: var(--cursor-x, 50%);
+  top: var(--cursor-y, 50%);
+  margin-left: -200px;
+  margin-top: -200px;
+  z-index: 0;
+}
+
+.cursor-glow:hover::after {
+  opacity: 1;
+}
