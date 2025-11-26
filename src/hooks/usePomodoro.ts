@@ -33,9 +33,12 @@ export function usePomodoro(
     setIsRunning(false);
     setTimeLeft(initialTime);
   };
+  const adjustTime = (seconds: number) => {
+    setTimeLeft((prev) => Math.max(0, prev + seconds));
+  };
 
   return [
     { timeLeft, isRunning, totalTime: initialTime },
-    { start, pause, stop },
+    { start, pause, stop, adjustTime },
   ];
 }

@@ -18,15 +18,15 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-emerald-950 via-teal-900 to-slate-900 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-linear-to-br from-emerald-950 via-teal-900 to-slate-900 flex items-center justify-center p-4 sm:p-8">
       <div className="max-w-2xl w-full">
         {/* Main Timer Card */}
         <div
           ref={cardRef}
-          className="glass-glow cursor-glow bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-12 border border-white/20"
+          className="glass-glow cursor-glow bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-12 border border-white/20"
         >
           <div className="relative z-10">
-            <h1 className="text-4xl font-bold text-white text-center mb-12 drop-shadow-lg">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8 sm:mb-12 drop-shadow-lg">
               🍅 Vibe Pomodoro
             </h1>
 

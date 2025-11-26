@@ -8,4 +8,5 @@ export interface PomodoroControls {
   start: () => void;
   pause: () => void;
   stop: () => void;
+  adjustTime: (seconds: number) => void;
 }

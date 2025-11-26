@@ -47,7 +47,7 @@ export function TodoList() {
       </h2>
 
       {/* Input */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <input
           type="text"
           value={inputValue}
@@ -58,7 +58,7 @@ export function TodoList() {
         />
         <button
           onClick={addTodo}
-          className="bg-emerald-500/80 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-medium transition-all transform hover:scale-105"
+          className="bg-emerald-500/80 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-medium transition-all transform hover:scale-105 sm:w-auto w-full"
         >
           Add
         </button>
