@@ -6,6 +6,8 @@ export function usePomodoro(
 ): [PomodoroState, PomodoroControls] {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isRunning, setIsRunning] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState(initialTime);
+  const [userSetTime, setUserSetTime] = useState(initialTime); // Last time set by user
 
   useEffect(() => {
     let interval: number | undefined;
@@ -27,18 +29,34 @@ export function usePomodoro(
     };
   }, [isRunning, timeLeft]);
 
-  const start = () => setIsRunning(true);
+  const start = () => {
+    if (!isRunning && timeLeft === sessionStartTime) {
+      // Starting fresh session
+      setSessionStartTime(timeLeft);
+    }
+    setIsRunning(true);
+  };
+
   const pause = () => setIsRunning(false);
+
   const stop = () => {
     setIsRunning(false);
-    setTimeLeft(initialTime);
+    setTimeLeft(userSetTime);
+    setSessionStartTime(userSetTime);
   };
+
   const adjustTime = (seconds: number) => {
-    setTimeLeft((prev) => Math.max(0, prev + seconds));
+    const newTime = Math.max(0, timeLeft + seconds);
+    setTimeLeft(newTime);
+    // Update session start time when adjusting while not running
+    if (!isRunning) {
+      setSessionStartTime(newTime);
+      setUserSetTime(newTime); // Remember this as the user's chosen time
+    }
   };
 
   return [
-    { timeLeft, isRunning, totalTime: initialTime },
+    { timeLeft, isRunning, totalTime: sessionStartTime },
     { start, pause, stop, adjustTime },
   ];
 }
