@@ -1,13 +1,38 @@
 import { useTodos } from "../contexts/TodoContext";
+import { useState } from "react";
 
 export function TodoList() {
-  const { todos, inputValue, setInputValue, addTodo, toggleTodo, deleteTodo } =
-    useTodos();
+  const {
+    todos,
+    inputValue,
+    setInputValue,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    reorderTodos,
+  } = useTodos();
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       addTodo();
     }
+  };
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    reorderTodos(draggedIndex, index);
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   return (
@@ -37,10 +62,16 @@ export function TodoList() {
       {/* Todo List */}
       {todos.length > 0 ? (
         <div className="space-y-2 max-h-48 overflow-y-auto">
-          {todos.map((todo) => (
+          {todos.map((todo, index) => (
             <div
               key={todo.id}
-              className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/10 hover:bg-white/10 transition-all group"
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              className={`flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/10 hover:bg-white/10 transition-all group cursor-move ${
+                draggedIndex === index ? "opacity-50" : ""
+              }`}
             >
               <input
                 type="checkbox"

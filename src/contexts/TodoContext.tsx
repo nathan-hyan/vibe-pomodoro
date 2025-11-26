@@ -14,6 +14,7 @@ interface TodoContextType {
   addTodo: () => void;
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
+  reorderTodos: (startIndex: number, endIndex: number) => void;
 }
 
 const TodoContext = createContext<TodoContextType | undefined>(undefined);
@@ -46,6 +47,13 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     setTodos(todos.filter((todo) => todo.id !== id));
   };
 
+  const reorderTodos = (startIndex: number, endIndex: number) => {
+    const result = Array.from(todos);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    setTodos(result);
+  };
+
   return (
     <TodoContext.Provider
       value={{
@@ -55,6 +63,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
         addTodo,
         toggleTodo,
         deleteTodo,
+        reorderTodos,
       }}
     >
       {children}
