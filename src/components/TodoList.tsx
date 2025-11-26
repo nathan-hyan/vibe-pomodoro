@@ -1,38 +1,8 @@
-import { useState } from "react";
-
-interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
-}
+import { useTodos } from "../contexts/TodoContext";
 
 export function TodoList() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [inputValue, setInputValue] = useState("");
-
-  const addTodo = () => {
-    if (inputValue.trim()) {
-      const newTodo: Todo = {
-        id: Date.now().toString(),
-        text: inputValue.trim(),
-        completed: false,
-      };
-      setTodos([...todos, newTodo]);
-      setInputValue("");
-    }
-  };
-
-  const toggleTodo = (id: string) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
-
-  const deleteTodo = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
-  };
+  const { todos, inputValue, setInputValue, addTodo, toggleTodo, deleteTodo } =
+    useTodos();
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -41,8 +11,8 @@ export function TodoList() {
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-8">
-      <h2 className="text-xl font-semibold text-white mb-4 text-center">
+    <div className="lg:mb-0 mb-8">
+      <h2 className="text-xl lg:text-2xl font-semibold lg:font-bold text-white mb-4 lg:mb-6 text-center">
         Focus Tasks
       </h2>
 
