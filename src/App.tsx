@@ -2,6 +2,7 @@ import { usePomodoro } from "./hooks/usePomodoro";
 import { Timer } from "./components/Timer";
 import { TodoList } from "./components/TodoList";
 import { Controls } from "./components/Controls";
+import { CompletionModal } from "./components/CompletionModal";
 import { useEffect, useRef } from "react";
 import { attachGlowEffect } from "./utils/glowEffect";
 import { TodoProvider } from "./contexts/TodoContext";
@@ -11,21 +12,38 @@ const POMODORO_TIME = 25 * 60; // 25 minutes in seconds
 function App() {
   const [state, controls] = usePomodoro(POMODORO_TIME);
   const cardRef = useRef<HTMLDivElement>(null);
+  const todoCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const cleanupFunctions: (() => void)[] = [];
+
     if (cardRef.current) {
-      return attachGlowEffect(cardRef.current);
+      cleanupFunctions.push(attachGlowEffect(cardRef.current));
     }
+
+    if (todoCardRef.current) {
+      cleanupFunctions.push(attachGlowEffect(todoCardRef.current));
+    }
+
+    return () => {
+      cleanupFunctions.forEach((cleanup) => cleanup());
+    };
   }, []);
 
   return (
     <TodoProvider>
-      <div className="min-h-screen bg-linear-to-br from-emerald-950 via-teal-900 to-slate-900 flex items-center justify-center p-4 sm:p-8">
+      {state.showCompletionModal && (
+        <CompletionModal onClose={controls.dismissModal} controls={controls} />
+      )}
+      <div className="min-h-screen bg-linear-to-br from-black via-black to-violet-950 flex items-center justify-center p-4 sm:p-8">
         <div className="w-full max-w-6xl">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-stretch lg:items-start">
             {/* Task List - Left Side on Desktop Only */}
             <div className="hidden lg:block lg:flex-1 lg:max-w-md">
-              <div className="glass-glow cursor-glow bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 border border-white/20 h-full">
+              <div
+                ref={todoCardRef}
+                className="glass-glow cursor-glow bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 border border-white/20 h-full"
+              >
                 <div className="relative z-10">
                   <TodoList />
                 </div>

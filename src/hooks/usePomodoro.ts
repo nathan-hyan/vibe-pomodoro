@@ -3,11 +3,15 @@ import type { PomodoroState, PomodoroControls } from "../types";
 
 export function usePomodoro(
   initialTime: number
-): [PomodoroState, PomodoroControls] {
+): [
+  PomodoroState & { showCompletionModal: boolean },
+  PomodoroControls & { dismissModal: () => void }
+] {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isRunning, setIsRunning] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState(initialTime);
-  const [userSetTime, setUserSetTime] = useState(initialTime); // Last time set by user
+  const [userSetTime, setUserSetTime] = useState(initialTime);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   useEffect(() => {
     let interval: number | undefined;
@@ -17,6 +21,7 @@ export function usePomodoro(
         setTimeLeft((prev) => {
           if (prev <= 1) {
             setIsRunning(false);
+            setShowCompletionModal(true);
             return 0;
           }
           return prev - 1;
@@ -28,6 +33,10 @@ export function usePomodoro(
       if (interval) clearInterval(interval);
     };
   }, [isRunning, timeLeft]);
+
+  const dismissModal = () => {
+    setShowCompletionModal(false);
+  };
 
   const start = () => {
     if (!isRunning && timeLeft === sessionStartTime) {
@@ -43,6 +52,7 @@ export function usePomodoro(
     setIsRunning(false);
     setTimeLeft(userSetTime);
     setSessionStartTime(userSetTime);
+    setShowCompletionModal(false);
   };
 
   const adjustTime = (seconds: number) => {
@@ -56,7 +66,7 @@ export function usePomodoro(
   };
 
   return [
-    { timeLeft, isRunning, totalTime: sessionStartTime },
-    { start, pause, stop, adjustTime },
+    { timeLeft, isRunning, totalTime: sessionStartTime, showCompletionModal },
+    { start, pause, stop, adjustTime, dismissModal },
   ];
 }
