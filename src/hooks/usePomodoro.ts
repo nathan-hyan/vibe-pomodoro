@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { PomodoroState, PomodoroControls } from "../types";
 import { useStats } from "./useStats";
+import { playAlarmSoundOnce } from "../utils/alarmSound";
 
 export function usePomodoro(
   initialTime: number
@@ -25,6 +26,8 @@ export function usePomodoro(
           if (prev <= 1) {
             setIsRunning(false);
             setShowCompletionModal(true);
+            // Play alarm sound once
+            playAlarmSoundOnce();
             // Track completed session only once
             if (!hasCountedSessionRef.current) {
               const sessionDuration = sessionStartTime;

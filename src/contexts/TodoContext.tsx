@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { useStats } from "../hooks/useStats";
 import { TodoContext, type Todo } from "./TodoContextDefinition";
+import { playTaskCompleteChime } from "../utils/alarmSound";
 
 export function TodoProvider({ children }: { children: ReactNode }) {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -27,6 +28,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
           const newCompleted = !todo.completed;
           // Track when task is marked as completed
           if (newCompleted && !todo.completed) {
+            playTaskCompleteChime(); // Play chime sound
             incrementCompletedTasks();
             addSessionTask(todo.text);
           }
