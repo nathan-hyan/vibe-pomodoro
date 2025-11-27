@@ -46,8 +46,21 @@ export function StatsProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const decrementCompletedTasks = () => {
+    setStats((prev) => ({
+      ...prev,
+      completedTasks: Math.max(0, prev.completedTasks - 1), // Don't go below 0
+    }));
+  };
+
   const addSessionTask = (taskText: string) => {
     setSessionCompletedTasks((prev) => [...prev, taskText]);
+  };
+
+  const removeSessionTask = (taskText: string) => {
+    setSessionCompletedTasks((prev) =>
+      prev.filter((task) => task !== taskText)
+    );
   };
 
   const clearSessionTasks = () => {
@@ -70,7 +83,9 @@ export function StatsProvider({ children }: { children: ReactNode }) {
         sessionCompletedTasks,
         addCompletedSession,
         incrementCompletedTasks,
+        decrementCompletedTasks,
         addSessionTask,
+        removeSessionTask,
         clearSessionTasks,
         resetStats,
       }}

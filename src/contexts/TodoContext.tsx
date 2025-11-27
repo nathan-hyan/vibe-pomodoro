@@ -1,13 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { useStats } from "../hooks/useStats";
 import { TodoContext, type Todo } from "./TodoContextDefinition";
 import { playTaskCompleteChime } from "../utils/alarmSound";
 
+const TODOS_STORAGE_KEY = "vibePomodoro_todos";
+
 export function TodoProvider({ children }: { children: ReactNode }) {
-  const [todos, setTodos] = useState<Todo[]>([]);
+  // Load todos from localStorage on mount
+  const [todos, setTodos] = useState<Todo[]>(() => {
+    try {
+      const stored = localStorage.getItem(TODOS_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
   const [inputValue, setInputValue] = useState("");
-  const { incrementCompletedTasks, addSessionTask } = useStats();
+  const {
+    incrementCompletedTasks,
+    decrementCompletedTasks,
+    addSessionTask,
+    removeSessionTask,
+  } = useStats();
+
+  // Save todos to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(TODOS_STORAGE_KEY, JSON.stringify(todos));
+    } catch (error) {
+      console.error("Failed to save todos to localStorage:", error);
+    }
+  }, [todos]);
 
   const addTodo = () => {
     if (inputValue.trim()) {
@@ -26,12 +50,18 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       todos.map((todo) => {
         if (todo.id === id) {
           const newCompleted = !todo.completed;
-          // Track when task is marked as completed
+
           if (newCompleted && !todo.completed) {
-            playTaskCompleteChime(); // Play chime sound
+            // Task is being checked (marked as completed)
+            playTaskCompleteChime();
             incrementCompletedTasks();
             addSessionTask(todo.text);
+          } else if (!newCompleted && todo.completed) {
+            // Task is being unchecked (marked as incomplete)
+            decrementCompletedTasks();
+            removeSessionTask(todo.text);
           }
+
           return { ...todo, completed: newCompleted };
         }
         return todo;
