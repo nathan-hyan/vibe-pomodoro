@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { PomodoroState, PomodoroControls } from "../types";
+import { useStats } from "./useStats";
 
 export function usePomodoro(
   initialTime: number
@@ -12,6 +13,8 @@ export function usePomodoro(
   const [sessionStartTime, setSessionStartTime] = useState(initialTime);
   const [userSetTime, setUserSetTime] = useState(initialTime);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const { addCompletedSession, clearSessionTasks } = useStats();
+  const hasCountedSessionRef = useRef(false);
 
   useEffect(() => {
     let interval: number | undefined;
@@ -22,6 +25,12 @@ export function usePomodoro(
           if (prev <= 1) {
             setIsRunning(false);
             setShowCompletionModal(true);
+            // Track completed session only once
+            if (!hasCountedSessionRef.current) {
+              const sessionDuration = sessionStartTime;
+              addCompletedSession(sessionDuration);
+              hasCountedSessionRef.current = true;
+            }
             return 0;
           }
           return prev - 1;
@@ -32,7 +41,7 @@ export function usePomodoro(
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, timeLeft]);
+  }, [isRunning, timeLeft, sessionStartTime, addCompletedSession]);
 
   const dismissModal = () => {
     setShowCompletionModal(false);
@@ -42,7 +51,10 @@ export function usePomodoro(
     if (!isRunning && timeLeft === sessionStartTime) {
       // Starting fresh session
       setSessionStartTime(timeLeft);
+      clearSessionTasks(); // Clear tasks from previous session
     }
+    // Reset the session counted flag when starting
+    hasCountedSessionRef.current = false;
     setIsRunning(true);
   };
 

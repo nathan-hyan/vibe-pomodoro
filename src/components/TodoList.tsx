@@ -1,4 +1,4 @@
-import { useTodos } from "../contexts/TodoContext";
+import { useTodos } from "../hooks/useTodos";
 import { useState } from "react";
 
 export function TodoList() {
@@ -36,7 +36,7 @@ export function TodoList() {
   };
 
   return (
-    <div className="lg:mb-0 mb-8">
+    <div className="lg:mb-0 mb-8 flex flex-col lg:h-full">
       <h2 className="text-xl lg:text-2xl font-semibold lg:font-bold text-white mb-4 lg:mb-6 text-center">
         Focus Tasks
       </h2>
@@ -49,11 +49,11 @@ export function TodoList() {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="What are you working on?"
-          className="flex-1 bg-white/10 backdrop-blur-sm text-white placeholder-white/50 px-4 py-3 rounded-xl border border-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+          className="flex-1 bg-white/10 backdrop-blur-sm text-white placeholder-white/50 px-4 py-3 rounded-xl border border-white/20 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
         />
         <button
           onClick={addTodo}
-          className="bg-emerald-500/80 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-medium transition-all transform hover:scale-105 sm:w-auto w-full"
+          className="bg-violet-500/80 hover:bg-violet-500 text-white px-6 py-3 rounded-xl font-medium transition-all transform hover:scale-105 sm:w-auto w-full cursor-pointer"
         >
           Add
         </button>
@@ -61,7 +61,7 @@ export function TodoList() {
 
       {/* Todo List */}
       {todos.length > 0 ? (
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+        <div className="space-y-2 lg:flex-1 lg:overflow-y-auto lg:min-h-0 overflow-y-visible max-h-48">
           {todos.map((todo, index) => (
             <div
               key={todo.id}
@@ -77,7 +77,7 @@ export function TodoList() {
                 type="checkbox"
                 checked={todo.completed}
                 onChange={() => toggleTodo(todo.id)}
-                className="w-5 h-5 rounded border-2 border-white/30 bg-white/10 checked:bg-emerald-500 checked:border-emerald-500 cursor-pointer transition-all"
+                className="w-5 h-5 rounded border-2 border-white/30 bg-white/10 checked:bg-violet-500 checked:border-violet-500 cursor-pointer transition-all"
               />
               <span
                 className={`flex-1 text-white transition-all ${
@@ -90,7 +90,7 @@ export function TodoList() {
               </span>
               <button
                 onClick={() => deleteTodo(todo.id)}
-                className="text-white/40 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+                className="text-white/40 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
               >
                 ✕
               </button>

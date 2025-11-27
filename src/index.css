@@ -2,7 +2,6 @@
 
 /* Glowing cursor effect for glass containers */
 .glass-glow {
-  cursor: pointer;
   position: relative;
 }
 

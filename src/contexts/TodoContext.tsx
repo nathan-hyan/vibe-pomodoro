@@ -1,27 +1,12 @@
-import { createContext, useContext, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
-
-interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
-}
-
-interface TodoContextType {
-  todos: Todo[];
-  inputValue: string;
-  setInputValue: (value: string) => void;
-  addTodo: () => void;
-  toggleTodo: (id: string) => void;
-  deleteTodo: (id: string) => void;
-  reorderTodos: (startIndex: number, endIndex: number) => void;
-}
-
-const TodoContext = createContext<TodoContextType | undefined>(undefined);
+import { useStats } from "../hooks/useStats";
+import { TodoContext, type Todo } from "./TodoContextDefinition";
 
 export function TodoProvider({ children }: { children: ReactNode }) {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const { incrementCompletedTasks, addSessionTask } = useStats();
 
   const addTodo = () => {
     if (inputValue.trim()) {
@@ -37,9 +22,18 @@ export function TodoProvider({ children }: { children: ReactNode }) {
 
   const toggleTodo = (id: string) => {
     setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
+      todos.map((todo) => {
+        if (todo.id === id) {
+          const newCompleted = !todo.completed;
+          // Track when task is marked as completed
+          if (newCompleted && !todo.completed) {
+            incrementCompletedTasks();
+            addSessionTask(todo.text);
+          }
+          return { ...todo, completed: newCompleted };
+        }
+        return todo;
+      })
     );
   };
 
@@ -69,12 +63,4 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       {children}
     </TodoContext.Provider>
   );
-}
-
-export function useTodos() {
-  const context = useContext(TodoContext);
-  if (context === undefined) {
-    throw new Error("useTodos must be used within a TodoProvider");
-  }
-  return context;
 }
