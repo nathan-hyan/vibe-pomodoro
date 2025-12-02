@@ -5,13 +5,13 @@ WORKDIR /usr/src/app
 # install dependencies into temp directory
 FROM base AS install
 RUN mkdir -p /temp/dev
-COPY package.json package-lock.json* /temp/dev/
-RUN cd /temp/dev && npm i
+COPY package.json package-lock.json /temp/dev/
+RUN cd /temp/dev && npm ci
 
 # install with --production (exclude devDependencies)
 RUN mkdir -p /temp/prod
-COPY package.json package-lock.json* /temp/prod/
-RUN cd /temp/prod && npm i --omit=dev
+COPY package.json package-lock.json /temp/prod/
+RUN cd /temp/prod && npm ci --omit=dev
 
 # copy node_modules and build the app
 FROM base AS prerelease
