@@ -1,5 +1,5 @@
 # Use Node.js for compatibility with older CPUs (AMD Phenom II, etc.)
-FROM node:20-slim AS base
+FROM node:iron-trixie-slim AS base
 WORKDIR /usr/src/app
 
 # install dependencies into temp directory
