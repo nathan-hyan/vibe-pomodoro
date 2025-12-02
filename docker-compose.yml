@@ -2,7 +2,9 @@ version: "3.8"
 
 services:
   vibe-pomodoro:
-    build: .
+    image: ghcr.io/nathan-hyan/vibe-pomodoro:latest
+    # Uncomment to build locally instead:
+    # build: .
     container_name: vibe-pomodoro
     ports:
       - "4173:4173" # Vite preview server
@@ -14,8 +16,7 @@ services:
     environment:
       # Path to the database file (inside container)
       - DB_PATH=/data/db.json
-      # API URL for the frontend (can be customized)
-      - VITE_API_URL=http://localhost:3001
+      # API URL is determined dynamically at runtime based on browser location
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4173"]
@@ -26,9 +27,4 @@ services:
 # For CasaOS deployment, you can customize:
 # 1. Change the volume path from ./data to any location you prefer
 # 2. Change the ports if you have conflicts
-# 3. Set VITE_API_URL to your domain/IP if accessing remotely
-#
-# Example for remote access:
-#   environment:
-#     - DB_PATH=/data/db.json
-#     - VITE_API_URL=http://your-server-ip:3001
+# 3. API URL is now dynamic - no configuration needed!
