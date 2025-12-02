@@ -36,7 +36,7 @@ export function useUpdateStatsMutation() {
 
       return { previousStats };
     },
-    onError: (err, newStats, context) => {
+    onError: (_err, _newStats, context) => {
       if (context?.previousStats) {
         queryClient.setQueryData(statsKeys.detail(), context.previousStats);
       }
@@ -65,7 +65,7 @@ export function useResetStatsMutation() {
 
       return { previousStats };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       if (context?.previousStats) {
         queryClient.setQueryData(statsKeys.detail(), context.previousStats);
       }

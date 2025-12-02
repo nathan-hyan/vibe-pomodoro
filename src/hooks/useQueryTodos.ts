@@ -42,7 +42,7 @@ export function useCreateTodoMutation() {
 
       return { previousTodos };
     },
-    onError: (err, newTodo, context) => {
+    onError: (_err, _newTodo, context) => {
       // Rollback to previous value on error
       if (context?.previousTodos) {
         queryClient.setQueryData(todoKeys.lists(), context.previousTodos);
@@ -72,7 +72,7 @@ export function useUpdateTodoMutation() {
 
       return { previousTodos };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       if (context?.previousTodos) {
         queryClient.setQueryData(todoKeys.lists(), context.previousTodos);
       }
@@ -99,7 +99,7 @@ export function useDeleteTodoMutation() {
 
       return { previousTodos };
     },
-    onError: (err, id, context) => {
+    onError: (_err, _id, context) => {
       if (context?.previousTodos) {
         queryClient.setQueryData(todoKeys.lists(), context.previousTodos);
       }
@@ -124,7 +124,7 @@ export function useReorderTodosMutation() {
 
       return { previousTodos };
     },
-    onError: (err, newTodos, context) => {
+    onError: (_err, _newTodos, context) => {
       if (context?.previousTodos) {
         queryClient.setQueryData(todoKeys.lists(), context.previousTodos);
       }

@@ -1,61 +1,72 @@
-version: "3.8"
-
-# CasaOS optimized docker-compose configuration
-# This file provides a ready-to-use configuration for CasaOS app store
+name: vibe-pomodoro
 services:
-  vibe-pomodoro:
+  app:
     image: vibe-pomodoro:latest
     container_name: vibe-pomodoro
-    hostname: vibe-pomodoro
 
-    # Network configuration
     ports:
-      - "4173:4173" # Web UI
-      - "3001:3001" # JSON Server API
+      - target: 4173
+        published: "4173"
+        protocol: tcp
+      - target: 3001
+        published: "3001"
+        protocol: tcp
 
-    # Persistent storage - IMPORTANT: Change this path in CasaOS
     volumes:
       - type: bind
         source: /DATA/AppData/vibe-pomodoro
         target: /data
 
-    # Environment variables
     environment:
-      # Database file location (inside container)
       DB_PATH: /data/db.json
-      # API URL - Use container's hostname or host IP
       VITE_API_URL: http://localhost:3001
-      # Timezone (optional)
-      TZ: UTC
 
-    # Restart policy
     restart: unless-stopped
 
-    # Health check
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4173"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    labels:
+      icon: https://cdn-icons-png.flaticon.com/512/2972/2972531.png
 
-    # Resource limits (optional, adjust as needed)
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 128M
-# CasaOS Configuration Instructions:
-# =====================================
-# 1. Upload this compose file to CasaOS
-# 2. Adjust the volume path under 'volumes' section:
-#    - Default: /DATA/AppData/vibe-pomodoro
-#    - Change to your preferred location
-# 3. If accessing from another device, update VITE_API_URL:
-#    - Replace 'localhost' with your CasaOS server IP
-#    - Example: http://192.168.1.100:3001
-# 4. Access the app at: http://your-casaos-ip:4173
-# 5. Your data will persist in the mounted volume
+    x-casaos:
+      ports:
+        - container: "4173"
+          description:
+            en_us: Web UI
+          protocol: tcp
+        - container: "3001"
+          description:
+            en_us: JSON Server API
+          protocol: tcp
+
+      volumes:
+        - container: /data
+          description:
+            en_us: App data directory
+
+      envs:
+        - container: DB_PATH
+          description:
+            en_us: Database file path
+        - container: VITE_API_URL
+          description:
+            en_us: API URL (use your server IP if accessing remotely)
+
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+  main: app
+  author: self
+  category: self
+  description:
+    en_us: A beautiful Pomodoro timer with integrated todo list, statistics tracking, and customizable work sessions. Keep your tasks organized and track your productivity.
+  tagline:
+    en_us: Focus timer with todo list
+  developer: Vibe Pomodoro
+  icon: https://cdn-icons-png.flaticon.com/512/2972/2972531.png
+  screenshot_link:
+    - https://via.placeholder.com/800x600?text=Vibe+Pomodoro
+  thumbnail: https://cdn-icons-png.flaticon.com/512/2972/2972531.png
+  title:
+    en_us: Vibe Pomodoro
+  index: /
+  port_map: "4173"
