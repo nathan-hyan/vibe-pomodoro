@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   vibe-pomodoro:
-    image: ghcr.io/nathan-hyan/vibe-pomodoro:latest
+    image: ghcr.io/nathan-hyan/vibe-pomodoro:main
     # Uncomment to build locally instead:
     # build: .
     container_name: vibe-pomodoro

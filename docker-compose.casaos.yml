@@ -1,7 +1,7 @@
 name: vibe-pomodoro
 services:
   app:
-    image: ghcr.io/nathan-hyan/vibe-pomodoro:latest
+    image: ghcr.io/nathan-hyan/vibe-pomodoro:main
     container_name: vibe-pomodoro
 
     ports:
