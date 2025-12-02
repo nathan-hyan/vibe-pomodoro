@@ -1,3 +1,5 @@
+import * as api from "../services/api";
+
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,22 +23,16 @@ export function SettingsModal({
     }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
-      // Get data from localStorage
-      const stats = localStorage.getItem("pomodoro-stats");
-      const todos = localStorage.getItem("vibePomodoro_todos");
-
-      const exportData = {
-        stats: stats ? JSON.parse(stats) : null,
-        todos: todos ? JSON.parse(todos) : null,
-        exportDate: new Date().toISOString(),
-      };
+      // Get data from API
+      const exportData = await api.exportData();
 
       // Create blob and download
       const blob = new Blob([JSON.stringify(exportData, null, 2)], {
         type: "application/json",
       });
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -63,7 +59,7 @@ export function SettingsModal({
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         try {
           const data = JSON.parse(event.target?.result as string);
 
@@ -75,18 +71,8 @@ export function SettingsModal({
             return;
           }
 
-          // Import stats
-          if (data.stats) {
-            localStorage.setItem("pomodoro-stats", JSON.stringify(data.stats));
-          }
-
-          // Import todos
-          if (data.todos) {
-            localStorage.setItem(
-              "vibePomodoro_todos",
-              JSON.stringify(data.todos)
-            );
-          }
+          // Import data via API
+          await api.importData(data);
 
           alert("Data imported successfully! Refreshing page...");
           window.location.reload();

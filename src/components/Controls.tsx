@@ -10,9 +10,9 @@ export function Controls({ state, controls }: ControlsProps) {
   const { start, pause, stop, adjustTime } = controls;
 
   const minusAdjustments = [
-    { label: "−20s", value: -20 },
-    { label: "−10s", value: -10 },
-    { label: "−5s", value: -5 },
+    { label: "-20s", value: -20 },
+    { label: "-10s", value: -10 },
+    { label: "-5s", value: -5 },
   ];
 
   const plusAdjustments = [

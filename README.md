@@ -1,17 +1,77 @@
-# React + TypeScript + Vite
+# 🍅 Vibe Pomodoro
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A beautiful, modern Pomodoro timer with todo list management and statistics tracking. Built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Pomodoro Timer**: 25-minute focused work sessions
+- **Todo Management**: Create, complete, and reorder tasks with drag & drop
+- **Statistics Tracking**: Monitor your productivity with session and task completion stats
+- **Persistent Storage**: All data saved via JSON Server API
+- **Export/Import**: Backup and restore your data anytime
+- **Beautiful UI**: Modern gradient design with smooth animations
+- **Docker Ready**: Easy deployment to Docker, CasaOS, and other container platforms
 
-## React Compiler
+## 🚀 Quick Start
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Local Development
 
-Note: This will impact Vite dev & build performances.
+```bash
+# Install dependencies
+bun install
+
+# Start development servers (JSON Server + Vite)
+bun run dev
+```
+
+The app will be available at `http://localhost:5173` with the API at `http://localhost:3001`.
+
+### Production Deployment
+
+See **[SETUP.md](./SETUP.md)** for detailed instructions on:
+
+- Docker deployment
+- CasaOS configuration
+- Environment variables
+- Data persistence and backups
+
+## 📦 Tech Stack
+
+- **Frontend**: React 19 + TypeScript + Vite
+- **Styling**: TailwindCSS 4
+- **Backend**: JSON Server (for persistent data storage)
+- **Build Tool**: Vite with Rolldown
+- **Type Safety**: TypeScript with strict mode
+
+## 💾 Data Persistence
+
+Unlike typical browser-based timers that use localStorage, Vibe Pomodoro uses **JSON Server** to store data in a `db.json` file. This means:
+
+- ✅ Data persists across browser sessions and devices
+- ✅ Easy backup and restore via file system
+- ✅ Perfect for Docker/CasaOS deployments with volume mounts
+- ✅ No data loss when clearing browser cache
+
+## 🐳 Docker & CasaOS
+
+The app includes full Docker support with volume mounting for persistent data:
+
+```bash
+# Quick start with Docker Compose
+docker-compose up -d
+
+# Your data will be saved in ./data/db.json
+```
+
+For CasaOS deployment, use the included `docker-compose.casaos.yml` file. See [SETUP.md](./SETUP.md) for details.
+
+## 📝 Development
+
+This project uses:
+
+- **React Compiler**: Enabled for automatic optimization
+- **Bun**: Fast package manager and runtime (optional)
+- **ESLint**: Configured with strict TypeScript rules
 
 ## Expanding the ESLint configuration
 
@@ -19,9 +79,9 @@ If you are developing a production application, we recommend updating the config
 
 ```js
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(["dist"]),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ["**/*.{ts,tsx}"],
     extends: [
       // Other configs...
 
@@ -36,40 +96,40 @@ export default defineConfig([
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
       },
       // other options...
     },
   },
-])
+]);
 ```
 
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js
 // eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+import reactX from "eslint-plugin-react-x";
+import reactDom from "eslint-plugin-react-dom";
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(["dist"]),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ["**/*.{ts,tsx}"],
     extends: [
       // Other configs...
       // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
+      reactX.configs["recommended-typescript"],
       // Enable lint rules for React DOM
       reactDom.configs.recommended,
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
       },
       // other options...
     },
   },
-])
+]);
 ```

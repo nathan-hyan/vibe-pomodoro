@@ -18,8 +18,9 @@ FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-# Build the Vite app
+# Build the Vite app with production API URL
 ENV NODE_ENV=production
+ENV VITE_API_URL=http://localhost:3001
 RUN bun run build
 
 # copy production dependencies and built files into final image
@@ -28,7 +29,25 @@ COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app/dist dist
 COPY --from=prerelease /usr/src/app/package.json .
 
-# run the app
+# Create data directory for persistent storage
+RUN mkdir -p /data
+
+# Copy default db.json template
+COPY --from=prerelease /usr/src/app/db.json /data/db.json.template
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && chown -R bun:bun /data
+
+# Environment variables
+ENV DB_PATH=/data/db.json
+ENV VITE_API_URL=http://localhost:3001
+
+# run the app (both JSON Server and Vite preview)
 USER bun
 EXPOSE 4173/tcp
-ENTRYPOINT [ "bun", "run", "preview", "--host", "0.0.0.0" ]
+EXPOSE 3001/tcp
+
+# Use entrypoint script to initialize database, then start servers
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["bun", "run", "start"]

@@ -20,6 +20,7 @@ export function usePomodoro(
   useEffect(() => {
     let interval: number | undefined;
 
+    // TODO: Move the timer logic to a separate util function to be called. 
     if (isRunning && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
@@ -46,6 +47,7 @@ export function usePomodoro(
     };
   }, [isRunning, timeLeft, sessionStartTime, addCompletedSession]);
 
+  // TODO: Create a modal hook with show and toggle methods
   const dismissModal = () => {
     setShowCompletionModal(false);
   };

@@ -9,6 +9,7 @@ export interface Todo {
 export interface TodoContextType {
   todos: Todo[];
   inputValue: string;
+  isLoading: boolean;
   setInputValue: (value: string) => void;
   addTodo: () => void;
   toggleTodo: (id: string) => void;

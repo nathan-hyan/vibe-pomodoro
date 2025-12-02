@@ -2,6 +2,7 @@ import { useStats } from "../hooks/useStats";
 import { useTodos } from "../hooks/useTodos";
 import { forwardRef } from "react";
 
+// TODO: I think new React doesnt need / like the forwardRef anymore. Check.
 export const Statistics = forwardRef<HTMLDivElement>((_props, ref) => {
   const { stats } = useStats();
   const { todos } = useTodos();
@@ -69,4 +70,5 @@ export const Statistics = forwardRef<HTMLDivElement>((_props, ref) => {
   );
 });
 
+// TODO: Necessary?
 Statistics.displayName = "Statistics";

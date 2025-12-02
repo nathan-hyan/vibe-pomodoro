@@ -1,56 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { StatsContext } from "./StatsContextDefinition";
-
-interface Stats {
-  totalTimeWorked: number; // in seconds
-  completedSessions: number;
-  completedTasks: number;
-}
+import {
+  useStatsQuery,
+  useAddCompletedSessionMutation,
+  useIncrementCompletedTasksMutation,
+  useDecrementCompletedTasksMutation,
+  useResetStatsMutation,
+} from "../hooks/useQueryStats";
 
 export function StatsProvider({ children }: { children: ReactNode }) {
-  const [stats, setStats] = useState<Stats>(() => {
-    // Load from localStorage
-    const saved = localStorage.getItem("pomodoro-stats");
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    return {
-      totalTimeWorked: 0,
-      completedSessions: 0,
-      completedTasks: 0,
-    };
-  });
+  // React Query hooks
+  const { data: stats } = useStatsQuery();
+  const addSessionMutation = useAddCompletedSessionMutation();
+  const incrementTasksMutation = useIncrementCompletedTasksMutation();
+  const decrementTasksMutation = useDecrementCompletedTasksMutation();
+  const resetStatsMutation = useResetStatsMutation();
 
+  // Local state for session tasks (not persisted)
   const [sessionCompletedTasks, setSessionCompletedTasks] = useState<string[]>(
     []
   );
 
-  // Save to localStorage whenever stats change
-  useEffect(() => {
-    localStorage.setItem("pomodoro-stats", JSON.stringify(stats));
-  }, [stats]);
-
-  const addCompletedSession = (duration: number) => {
-    setStats((prev) => ({
-      ...prev,
-      totalTimeWorked: prev.totalTimeWorked + duration,
-      completedSessions: prev.completedSessions + 1,
-    }));
+  const addCompletedSession = async (duration: number) => {
+    addSessionMutation.mutate(duration);
   };
 
-  const incrementCompletedTasks = () => {
-    setStats((prev) => ({
-      ...prev,
-      completedTasks: prev.completedTasks + 1,
-    }));
+  const incrementCompletedTasks = async () => {
+    incrementTasksMutation.mutate();
   };
 
-  const decrementCompletedTasks = () => {
-    setStats((prev) => ({
-      ...prev,
-      completedTasks: Math.max(0, prev.completedTasks - 1), // Don't go below 0
-    }));
+  const decrementCompletedTasks = async () => {
+    decrementTasksMutation.mutate();
   };
 
   const addSessionTask = (taskText: string) => {
@@ -67,19 +48,19 @@ export function StatsProvider({ children }: { children: ReactNode }) {
     setSessionCompletedTasks([]);
   };
 
-  const resetStats = () => {
-    setStats({
-      totalTimeWorked: 0,
-      completedSessions: 0,
-      completedTasks: 0,
-    });
+  const resetStats = async () => {
+    resetStatsMutation.mutate();
     setSessionCompletedTasks([]);
   };
 
   return (
     <StatsContext.Provider
       value={{
-        stats,
+        stats: stats || {
+          totalTimeWorked: 0,
+          completedSessions: 0,
+          completedTasks: 0,
+        },
         sessionCompletedTasks,
         addCompletedSession,
         incrementCompletedTasks,

@@ -1,22 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { useStats } from "../hooks/useStats";
-import { TodoContext, type Todo } from "./TodoContextDefinition";
+import { TodoContext } from "./TodoContextDefinition";
 import { playTaskCompleteChime } from "../utils/alarmSound";
-
-const TODOS_STORAGE_KEY = "vibePomodoro_todos";
+import {
+  useTodosQuery,
+  useCreateTodoMutation,
+  useUpdateTodoMutation,
+  useDeleteTodoMutation,
+  useReorderTodosMutation,
+} from "../hooks/useQueryTodos";
 
 export function TodoProvider({ children }: { children: ReactNode }) {
-  // Load todos from localStorage on mount
-  const [todos, setTodos] = useState<Todo[]>(() => {
-    try {
-      const stored = localStorage.getItem(TODOS_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  /*
+  TODO: Implement proper UUID generation instead of Date.now().toString()
+  TODO: Implement proper text capitalization
+  TODO: Zod validation for backend items and frontend forms
+  */
+
   const [inputValue, setInputValue] = useState("");
+
+  // React Query hooks
+  const { data: todos = [], isLoading } = useTodosQuery();
+  const createTodoMutation = useCreateTodoMutation();
+  const updateTodoMutation = useUpdateTodoMutation();
+  const deleteTodoMutation = useDeleteTodoMutation();
+  const reorderTodosMutation = useReorderTodosMutation();
+
   const {
     incrementCompletedTasks,
     decrementCompletedTasks,
@@ -24,60 +34,56 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     removeSessionTask,
   } = useStats();
 
-  // Save todos to localStorage whenever they change
-  useEffect(() => {
-    try {
-      localStorage.setItem(TODOS_STORAGE_KEY, JSON.stringify(todos));
-    } catch (error) {
-      console.error("Failed to save todos to localStorage:", error);
-    }
-  }, [todos]);
-
-  const addTodo = () => {
+  const addTodo = async () => {
     if (inputValue.trim()) {
-      const newTodo: Todo = {
-        id: Date.now().toString(),
-        text: inputValue.trim(),
-        completed: false,
-      };
-      setTodos([...todos, newTodo]);
-      setInputValue("");
+      createTodoMutation.mutate(
+        {
+          text: inputValue.trim(),
+          completed: false,
+        },
+        {
+          onSuccess: () => {
+            setInputValue("");
+          },
+        }
+      );
     }
   };
 
-  const toggleTodo = (id: string) => {
-    setTodos(
-      todos.map((todo) => {
-        if (todo.id === id) {
-          const newCompleted = !todo.completed;
+  const toggleTodo = async (id: string) => {
+    const todo = todos.find((t) => t.id === id);
+    if (!todo) return;
 
-          if (newCompleted && !todo.completed) {
-            // Task is being checked (marked as completed)
-            playTaskCompleteChime();
-            incrementCompletedTasks();
-            addSessionTask(todo.text);
-          } else if (!newCompleted && todo.completed) {
-            // Task is being unchecked (marked as incomplete)
-            decrementCompletedTasks();
-            removeSessionTask(todo.text);
-          }
+    const newCompleted = !todo.completed;
 
-          return { ...todo, completed: newCompleted };
-        }
-        return todo;
-      })
-    );
+    updateTodoMutation.mutate({
+      id,
+      updates: { completed: newCompleted },
+    });
+
+    // Handle stats and sound effects
+    if (newCompleted && !todo.completed) {
+      // Task is being checked (marked as completed)
+      playTaskCompleteChime();
+      incrementCompletedTasks();
+      addSessionTask(todo.text);
+    } else if (!newCompleted && todo.completed) {
+      // Task is being unchecked (marked as incomplete)
+      decrementCompletedTasks();
+      removeSessionTask(todo.text);
+    }
   };
 
-  const deleteTodo = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const deleteTodo = async (id: string) => {
+    deleteTodoMutation.mutate(id);
   };
 
-  const reorderTodos = (startIndex: number, endIndex: number) => {
+  const reorderTodosList = async (startIndex: number, endIndex: number) => {
     const result = Array.from(todos);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    setTodos(result);
+
+    reorderTodosMutation.mutate(result);
   };
 
   return (
@@ -85,11 +91,12 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       value={{
         todos,
         inputValue,
+        isLoading,
         setInputValue,
         addTodo,
         toggleTodo,
         deleteTodo,
-        reorderTodos,
+        reorderTodos: reorderTodosList,
       }}
     >
       {children}

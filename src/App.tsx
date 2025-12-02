@@ -10,6 +10,8 @@ import { attachGlowEffect } from "./utils/glowEffect";
 import { TodoProvider } from "./contexts/TodoContext";
 import { StatsProvider } from "./contexts/StatsContext";
 import { useStats } from "./hooks/useStats";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
 
 const POMODORO_TIME = 25 * 60; // 25 minutes in seconds
 
@@ -21,6 +23,7 @@ function AppContent() {
   const todoCardRef = useRef<HTMLDivElement>(null);
   const statsCardRef = useRef<HTMLDivElement>(null);
 
+  // TODO: Would this be better as a custom hook? would it be better to create a container that handles all of this and wrap the contents?
   useEffect(() => {
     const cleanupFunctions: (() => void)[] = [];
 
@@ -41,6 +44,10 @@ function AppContent() {
     };
   }, []);
 
+  // TODO: Move Provider to root level (main.tsx)
+  // TODO: Nice to have i18n support
+  // TODO: Set design and create reusable buttons in a separate component
+  // TODO: Move modals to a reusable component and reuse them both in <CompletionModal /> and <SettingsModal />
   return (
     <>
       <TodoProvider>
@@ -65,6 +72,7 @@ function AppContent() {
           >
             <span className="text-2xl">⚙️</span>
           </button>
+
           <div className="w-full max-w-6xl">
             {/* Mobile: Stack vertically, Desktop: Grid 3 columns (1/3 + 2/3) */}
             <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-8 relative">
@@ -123,11 +131,15 @@ function AppContent() {
   );
 }
 
+// TODO: Move providers to main.tsx
+
 function App() {
   return (
-    <StatsProvider>
-      <AppContent />
-    </StatsProvider>
+    <QueryClientProvider client={queryClient}>
+      <StatsProvider>
+        <AppContent />
+      </StatsProvider>
+    </QueryClientProvider>
   );
 }
 
