@@ -1,26 +1,5 @@
 {
-  "todos": [
-    {
-      "id": "c130",
-      "text": "Is this shit working?",
-      "completed": false
-    },
-    {
-      "id": "2b27",
-      "text": "seems so",
-      "completed": false
-    },
-    {
-      "id": "6aed",
-      "text": "nah man",
-      "completed": false
-    },
-    {
-      "id": "dda4",
-      "text": "oh shit, no cors errors",
-      "completed": false
-    }
-  ],
+  "todos": [],
   "stats": {
     "totalTimeWorked": 0,
     "completedSessions": 0,
