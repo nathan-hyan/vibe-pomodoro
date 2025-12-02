@@ -19,7 +19,6 @@ services:
 
     environment:
       DB_PATH: /data/db.json
-      VITE_API_URL: http://localhost:3001
 
     restart: unless-stopped
 
@@ -46,9 +45,6 @@ services:
         - container: DB_PATH
           description:
             en_us: Database file path
-        - container: VITE_API_URL
-          description:
-            en_us: API URL (use your server IP if accessing remotely)
 
 x-casaos:
   architectures:

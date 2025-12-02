@@ -18,9 +18,9 @@ FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-# Build the Vite app with production API URL
+# Build the Vite app
+# API URL is determined dynamically at runtime, not build time
 ENV NODE_ENV=production
-ENV VITE_API_URL=http://localhost:3001
 RUN npm run build
 
 # copy production dependencies and built files into final image
@@ -41,7 +41,6 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh && chown -R node:node /data
 
 # Environment variables
 ENV DB_PATH=/data/db.json
-ENV VITE_API_URL=http://localhost:3001
 
 # run the app (both JSON Server and Vite preview)
 USER node

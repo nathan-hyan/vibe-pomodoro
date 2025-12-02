@@ -1,6 +1,20 @@
 import type { Todo } from "../contexts/TodoContextDefinition";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+// Dynamic API URL based on browser's current location
+// This allows the app to work regardless of how it's accessed (localhost, LAN IP, domain)
+function getApiUrl(): string {
+  // If VITE_API_URL is explicitly set, use it (for development)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // Otherwise, use the current hostname with port 3001
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  return `${protocol}//${hostname}:3001`;
+}
+
+const API_URL = getApiUrl();
 
 // Stats interface
 export interface Stats {
