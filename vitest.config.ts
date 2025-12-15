@@ -1,8 +1,7 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     tailwindcss(),
@@ -12,33 +11,6 @@ export default defineConfig({
       },
     }),
   ],
-  preview: {
-    host: "0.0.0.0",
-    port: 4173,
-  },
-  server: {
-    watch: {
-      ignored: ["**/db.json"],
-    },
-  },
-  test: {
-    globals: true,
-    environment: "jsdom",
-    setupFiles: "./src/test/setup.ts",
-    css: true,
-    coverage: {
-      provider: "v8",
-      reporter: ["text", "json", "html"],
-      exclude: [
-        "node_modules/",
-        "src/test/",
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/*.spec.ts",
-        "**/*.spec.tsx",
-      ],
-    },
-  },
   test: {
     globals: true,
     environment: "jsdom",

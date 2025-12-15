@@ -12,7 +12,13 @@
     "preview": "vite preview",
     "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
     "start:server": "json-server --watch ${DB_PATH:-./db.json} --port 3001 --host 0.0.0.0",
-    "start:client": "vite preview --host 0.0.0.0 --port 4173"
+    "start:client": "vite preview --host 0.0.0.0 --port 4173",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
@@ -23,23 +29,36 @@
     "concurrently": "^9.2.1",
     "json-server": "^1.0.0-beta.3",
     "react": "^19.2.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.68.0",
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
+    "@vitest/ui": "^2.1.8",
     "@eslint/js": "^9.39.1",
     "@tanstack/eslint-plugin-query": "^5.62.0",
+    "jsdom": "^25.0.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "vitest": "^2.1.8"
+    "@testing-library/user-event": "^14.5.2",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/ui": "^2.1.8",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "jsdom": "^25.0.1",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^6.0.5"
+    "vite": "^6.0.5",
+    "vitest": "^2.1.8"
   }
 }
