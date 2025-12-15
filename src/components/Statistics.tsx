@@ -1,11 +1,17 @@
-import { useStats } from "../hooks/useStats";
-import { useTodos } from "../hooks/useTodos";
 import { forwardRef } from "react";
 
 // TODO: I think new React doesnt need / like the forwardRef anymore. Check.
 export const Statistics = forwardRef<HTMLDivElement>((_props, ref) => {
-  const { stats } = useStats();
-  const { todos } = useTodos();
+  const stats = {
+    totalTimeWorked: 0,
+    completedSessions: 0,
+    completedTasks: 0,
+  };
+
+  const todos = [
+    { id: "1", text: "Write today's top 3 tasks", completed: false },
+    { id: "2", text: "Start a 25-minute focus session", completed: false },
+  ];
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);

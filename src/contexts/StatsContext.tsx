@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { StatsContext } from "./StatsContextDefinition";
 import {
   useStatsQuery,
   useAddCompletedSessionMutation,
@@ -53,25 +52,39 @@ export function StatsProvider({ children }: { children: ReactNode }) {
     setSessionCompletedTasks([]);
   };
 
-  return (
-    <StatsContext.Provider
-      value={{
-        stats: stats || {
-          totalTimeWorked: 0,
-          completedSessions: 0,
-          completedTasks: 0,
-        },
-        sessionCompletedTasks,
-        addCompletedSession,
-        incrementCompletedTasks,
-        decrementCompletedTasks,
-        addSessionTask,
-        removeSessionTask,
-        clearSessionTasks,
-        resetStats,
-      }}
-    >
-      {children}
-    </StatsContext.Provider>
-  );
+  console.log({
+    sessionCompletedTasks,
+    stats,
+    addCompletedSession,
+    incrementCompletedTasks,
+    decrementCompletedTasks,
+    addSessionTask,
+    removeSessionTask,
+    clearSessionTasks,
+    resetStats,
+  });
+
+  return <>{children}</>;
+
+  // return (
+  //   <StatsContext.Provider
+  //     value={{
+  //       stats: stats || {
+  //         totalTimeWorked: 0,
+  //         completedSessions: 0,
+  //         completedTasks: 0,
+  //       },
+  //       sessionCompletedTasks,
+  //       addCompletedSession,
+  //       incrementCompletedTasks,
+  //       decrementCompletedTasks,
+  //       addSessionTask,
+  //       removeSessionTask,
+  //       clearSessionTasks,
+  //       resetStats,
+  //     }}
+  //   >
+  //     {children}
+  //   </StatsContext.Provider>
+  // );
 }

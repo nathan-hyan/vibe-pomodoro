@@ -1,6 +1,4 @@
-import { createContext } from "react";
-
-interface Stats {
+export interface Stats {
   totalTimeWorked: number; // in seconds
   completedSessions: number;
   completedTasks: number;
@@ -17,7 +15,3 @@ export interface StatsContextType {
   clearSessionTasks: () => void;
   resetStats: () => void;
 }
-
-export const StatsContext = createContext<StatsContextType | undefined>(
-  undefined
-);

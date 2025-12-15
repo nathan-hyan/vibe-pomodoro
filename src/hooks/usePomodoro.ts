@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import type { PomodoroState, PomodoroControls } from "../types";
-import { useStats } from "./useStats";
+// import { useStats } from "./useStats";
 import { playAlarmSoundOnce } from "../utils/alarmSound";
 
 export function usePomodoro(
@@ -14,13 +14,12 @@ export function usePomodoro(
   const [sessionStartTime, setSessionStartTime] = useState(initialTime);
   const [userSetTime, setUserSetTime] = useState(initialTime);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
-  const { addCompletedSession, clearSessionTasks } = useStats();
   const hasCountedSessionRef = useRef(false);
 
   useEffect(() => {
     let interval: number | undefined;
 
-    // TODO: Move the timer logic to a separate util function to be called. 
+    // TODO: Move the timer logic to a separate util function to be called.
     if (isRunning && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
@@ -31,8 +30,8 @@ export function usePomodoro(
             playAlarmSoundOnce();
             // Track completed session only once
             if (!hasCountedSessionRef.current) {
-              const sessionDuration = sessionStartTime;
-              addCompletedSession(sessionDuration);
+              // const sessionDuration = sessionStartTime;
+              // addCompletedSession(sessionDuration);
               hasCountedSessionRef.current = true;
             }
             return 0;
@@ -45,7 +44,7 @@ export function usePomodoro(
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, timeLeft, sessionStartTime, addCompletedSession]);
+  }, [isRunning, timeLeft, sessionStartTime]);
 
   // TODO: Create a modal hook with show and toggle methods
   const dismissModal = () => {
@@ -56,7 +55,7 @@ export function usePomodoro(
     if (!isRunning && timeLeft === sessionStartTime) {
       // Starting fresh session
       setSessionStartTime(timeLeft);
-      clearSessionTasks(); // Clear tasks from previous session
+      // clearSessionTasks(); // Clear tasks from previous session
     }
     // Reset the session counted flag when starting
     hasCountedSessionRef.current = false;

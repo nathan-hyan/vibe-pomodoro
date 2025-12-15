@@ -1,39 +1,48 @@
-import { useTodos } from "../hooks/useTodos";
+import classNames from "classnames";
 import { useState } from "react";
+import useDragging from "../hooks/useDragging";
+import {
+  useCreateTodo,
+  useDeleteTodo,
+  useTodos,
+  useToggleTodo,
+} from "../hooks/useTodos";
 
 export function TodoList() {
-  const {
-    todos,
-    inputValue,
-    setInputValue,
-    addTodo,
-    toggleTodo,
-    deleteTodo,
-    reorderTodos,
-  } = useTodos();
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [inputValue, setInputValue] = useState("");
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      addTodo();
-    }
-  };
+  const { data: todos, isLoading } = useTodos();
+  const { mutateAsync: createTodo } = useCreateTodo();
+  const { mutateAsync: toggleTodo } = useToggleTodo();
+  const { mutateAsync: deleteTodo } = useDeleteTodo();
 
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
-  };
+  const { handleDragEnd, handleDragOver, handleDragStart, draggedIndex } =
+    useDragging(todos || []);
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
+  const addTodo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index) return;
+    const text = inputValue.trim();
 
-    reorderTodos(draggedIndex, index);
-    setDraggedIndex(index);
+    if (!text) return;
+
+    await createTodo(text);
+    setInputValue("");
   };
 
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-  };
+  // const {
+  //   todos,
+  //   addTodo,
+  //   toggleTodo,
+  //   deleteTodo,
+  //   handleDragEnd,
+  //   handleDragOver,
+  //   handleDragStart,
+  //   draggedIndex,
+  //   inputValue,
+  //   setInputValue,
+  // } = useMockedTodoData();
+
+  if (isLoading || !todos) return <div>Loading...</div>;
 
   return (
     <div className="lg:mb-0 mb-8 flex flex-col lg:h-full">
@@ -42,60 +51,86 @@ export function TodoList() {
       </h2>
 
       {/* Input */}
-      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+      <form onSubmit={addTodo} className="flex flex-col sm:flex-row gap-2 mb-4">
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress} // TODO: Deprecated, use onKeyDown
           placeholder="What are you working on?"
           className="flex-1 bg-white/10 backdrop-blur-sm text-white placeholder-white/50 px-4 py-3 rounded-xl border border-white/20 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
         />
         <button
-          onClick={addTodo}
+          type="submit"
           className="bg-violet-500/80 hover:bg-violet-500 text-white px-6 py-3 rounded-xl font-medium transition-all transform hover:scale-105 sm:w-auto w-full cursor-pointer"
         >
           Add
         </button>
-      </div>
+      </form>
 
       {/* Todo List */}
       {todos.length > 0 ? (
         <div className="space-y-2 lg:flex-1 lg:overflow-y-auto lg:min-h-0 overflow-y-visible max-h-48">
-          {todos.map((todo, index) => (
-            <div
-              key={todo.id}
-              draggable
-              onDragStart={() => handleDragStart(index)}
-              onDragOver={(e) => handleDragOver(e, index)}
-              onDragEnd={handleDragEnd}
-              className={`flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/10 hover:bg-white/10 transition-all group cursor-move ${
-                draggedIndex === index ? "opacity-50" : ""
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={todo.completed}
-                onChange={() => toggleTodo(todo.id)}
-                className="w-5 h-5 rounded border-2 border-white/30 bg-white/10 checked:bg-violet-500 checked:border-violet-500 cursor-pointer transition-all"
-              />
-              <span
-                className={`flex-1 text-white transition-all ${
-                  todo.completed
-                    ? "line-through text-white/50"
-                    : "text-white/90"
-                }`}
+          {todos.map((todo) => {
+            const isOptimistic = todo.id.startsWith("temp-");
+            const isDraggable = !todo.completed && !isOptimistic;
+
+            const incompleteTodos = todos.filter(
+              (t) => !t.completed && !t.id.startsWith("temp-")
+            );
+            const dragIndex = incompleteTodos.findIndex(
+              (t) => t.id === todo.id
+            );
+
+            return (
+              <div
+                key={todo.id}
+                draggable={isDraggable}
+                onDragStart={
+                  isDraggable ? () => handleDragStart(dragIndex) : undefined
+                }
+                onDragOver={
+                  isDraggable ? (e) => handleDragOver(e, dragIndex) : undefined
+                }
+                onDragEnd={isDraggable ? handleDragEnd : undefined}
+                className={classNames(
+                  "flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/10 hover:bg-white/10 transition-all group",
+                  {
+                    "opacity-50":
+                      isOptimistic ||
+                      (draggedIndex === dragIndex && isDraggable),
+                    "cursor-move": isDraggable,
+                    "cursor-default": !isDraggable,
+                  }
+                )}
               >
-                {todo.text}
-              </span>
-              <button
-                onClick={() => deleteTodo(todo.id)}
-                className="text-white/40 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+                <input
+                  type="checkbox"
+                  checked={todo.completed}
+                  onChange={() => toggleTodo(todo.id)}
+                  className="w-5 h-5 rounded border-2 border-white/30 bg-white/10 checked:bg-violet-500 checked:border-violet-500 cursor-pointer transition-all"
+                />
+                <span
+                  className={classNames("flex-1 text-white transition-all", {
+                    "animate-pulse": isOptimistic,
+                    "line-through text-white/50": todo.completed,
+                    "text-white/90": !todo.completed,
+                  })}
+                >
+                  {todo.text}
+                </span>
+                {isOptimistic ? (
+                  <p className="text-white/80 animate-pulse">(uploading...)</p>
+                ) : (
+                  <button
+                    onClick={() => deleteTodo(todo.id)}
+                    className="text-white/40 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <p className="text-white/40 text-center text-sm py-4">

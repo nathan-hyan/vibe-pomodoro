@@ -1,4 +1,4 @@
-import type { Todo } from "../contexts/TodoContextDefinition";
+import type { Todo } from "../types/todos";
 import API_URL from "../utils/getApiUrl";
 
 // Stats interface

@@ -1,9 +1,9 @@
-import { createContext } from "react";
-
 export interface Todo {
   id: string;
+  index: number;
   text: string;
   completed: boolean;
+  createdAt: Date;
 }
 
 export interface TodoContextType {
@@ -16,7 +16,3 @@ export interface TodoContextType {
   deleteTodo: (id: string) => void;
   reorderTodos: (startIndex: number, endIndex: number) => void;
 }
-
-export const TodoContext = createContext<TodoContextType | undefined>(
-  undefined
-);
