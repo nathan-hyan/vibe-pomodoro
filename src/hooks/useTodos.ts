@@ -51,20 +51,31 @@ export const useCreateTodo = () => {
         id: `temp-${Date.now()}`,
         text: todoText,
         completed: false,
+        current: false,
         createdAt: new Date(),
         index: 0,
       };
 
       queryClient.setQueryData<Todo[]>(["todos"], (old = []) => {
-        const incompleteTodos = old.filter((t) => !t.completed);
+        const incompleteTodos = old.filter(
+          (t) => !t.completed && !t.id.startsWith("temp-")
+        );
         const completedTodos = old.filter((t) => t.completed);
+        const optimisticTodos = old.filter(
+          (t) => !t.completed && t.id.startsWith("temp-")
+        );
 
         const updatedIncompleteTodos = incompleteTodos.map((todo) => ({
           ...todo,
           index: todo.index + 1,
         }));
 
-        return [optimisticTodo, ...updatedIncompleteTodos, ...completedTodos];
+        return [
+          optimisticTodo,
+          ...optimisticTodos,
+          ...updatedIncompleteTodos,
+          ...completedTodos,
+        ];
       });
 
       return { previousTodos };

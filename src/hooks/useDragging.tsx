@@ -7,12 +7,6 @@ function useDragging(todos: Todo[]) {
   const [localTodos, setLocalTodos] = useState<Todo[]>([]);
   const { mutateAsync: reorderTodos } = useReorderTodos();
 
-  console.log(
-    localTodos.map((t) => {
-      return { index: t.index, text: t.text };
-    })
-  );
-
   const incompleteTodos = todos.filter(
     (t) => !t.completed && !t.id.startsWith("temp-")
   );
