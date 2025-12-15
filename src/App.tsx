@@ -12,6 +12,7 @@ import { StatsProvider } from "./contexts/StatsContext";
 import { useStats } from "./hooks/useStats";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const POMODORO_TIME = 25 * 60; // 25 minutes in seconds
 
@@ -127,6 +128,7 @@ function AppContent() {
           </div>
         </div>
       </TodoProvider>
+      <ReactQueryDevtools />
     </>
   );
 }
