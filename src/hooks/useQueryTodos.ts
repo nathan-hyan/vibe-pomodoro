@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "../services/api";
-import type { Todo } from "../contexts/TodoContextDefinition";
+import type { Todo } from '../types/todos';
 
 // Query keys
 export const todoKeys = {
