@@ -15,9 +15,6 @@
     "start:client": "vite preview --host 0.0.0.0 --port 4173",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
@@ -37,13 +34,10 @@
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
-    "@vitest/ui": "^2.1.8",
     "@eslint/js": "^9.39.1",
     "@tanstack/eslint-plugin-query": "^5.62.0",
-    "jsdom": "^25.0.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
-    "vitest": "^2.1.8"
     "@testing-library/user-event": "^14.5.2",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
