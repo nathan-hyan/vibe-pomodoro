@@ -130,7 +130,7 @@ Collected from source code comments:
 - **Timer drift**: `setInterval` with 1s ticks will drift over long sessions. A `Date.now()`-based approach (checking elapsed time each tick) would be more accurate.
 - ~~**Unused dependencies**: `apisauce` — **FIXED**: removed package and dead service files.~~
 - ~~**`VITE_API_URL` env var is ignored** — **FIXED**: `getApiUrl.ts` now reads `import.meta.env.VITE_API_URL` first, falling back to dynamic resolution.~~
-- **No tests**: Zero test files. No test runner configured.
+- ~~**No tests**: Zero test files. No test runner configured.~~ — **FIXED**: Vitest (unit) + Playwright (E2E) configured. 32 unit tests + 10 E2E tests for the Pomodoro timer.
 - **No routing**: Single-page app with no router. If features grow (e.g., separate stats page, settings page), a router will be needed.
 - **Drag & drop is basic**: Uses native HTML5 drag events. On mobile/touch this won't work. Consider `@dnd-kit` or similar for touch support.
 - **`reorderTodos`** fires N PATCH requests (one per todo). This is a known limitation noted in the code — could be slow with many todos.
@@ -178,8 +178,8 @@ Collected from source code comments:
 
 ### Reliability & Testing
 21. **Fix timer drift** — replace `setInterval` counting with `Date.now()`-based elapsed time checking.
-22. **Add unit tests** — zero tests exist. Start with `usePomodoro` hook and API service functions.
-23. **Add E2E tests** — Playwright for the core flow: start timer → add task → complete task → session ends.
+22. ~~**Add unit tests**~~ — **DONE**: Vitest + React Testing Library + jsdom. 32 tests covering all timer scenarios (start, stop, pause, resume, time adjustments, custom input, completion modal + chime).
+23. ~~**Add E2E tests**~~ — **DONE**: Playwright (Chromium). 10 tests covering the same scenarios against the real app.
 
 ### Infrastructure
 24. **Batch `reorderTodos`** — currently fires N PATCH requests. Consider a custom JSON Server route or switching to a single PUT of the full list.
@@ -194,6 +194,9 @@ bun run build        # TypeScript check + Vite build
 bun run lint         # ESLint
 bun run preview      # Preview production build
 bun run start        # Production mode (JSON Server + Vite preview)
+bun run test         # Vitest in watch mode
+bun run test:unit    # Vitest single run
+bun run test:e2e     # Playwright E2E (needs dev server running)
 ```
 
 ## Conventions

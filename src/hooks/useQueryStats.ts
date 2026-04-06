@@ -42,7 +42,7 @@ export function useUpdateStatsMutation() {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: statsKeys.detail() });
+      queryClient.invalidateQueries({ queryKey: statsKeys.detail(), refetchType: "none" });
     },
   });
 }
@@ -71,7 +71,7 @@ export function useResetStatsMutation() {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: statsKeys.detail() });
+      queryClient.invalidateQueries({ queryKey: statsKeys.detail(), refetchType: "none" });
     },
   });
 }

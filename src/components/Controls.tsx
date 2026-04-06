@@ -30,8 +30,7 @@ export function Controls({ state, controls }: ControlsProps) {
           <button
             key={label}
             onClick={() => adjustTime(value)}
-            disabled={isRunning}
-            className="bg-red-500/10 hover:bg-red-500/20 backdrop-blur-sm text-red-300 hover:text-red-200 font-medium py-2 px-3 sm:px-4 rounded-lg border border-red-500/30 hover:border-red-500/50 shadow transition-all duration-200 text-xs sm:text-sm disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            className="bg-red-500/10 hover:bg-red-500/20 backdrop-blur-sm text-red-300 hover:text-red-200 font-medium py-2 px-3 sm:px-4 rounded-lg border border-red-500/30 hover:border-red-500/50 shadow transition-all duration-200 text-xs sm:text-sm cursor-pointer"
           >
             {label}
           </button>
@@ -42,8 +41,7 @@ export function Controls({ state, controls }: ControlsProps) {
           <button
             key={label}
             onClick={() => adjustTime(value)}
-            disabled={isRunning}
-            className="bg-violet-500/10 hover:bg-violet-500/20 backdrop-blur-sm text-violet-300 hover:text-violet-200 font-medium py-2 px-3 sm:px-4 rounded-lg border border-violet-500/30 hover:border-violet-500/50 shadow transition-all duration-200 text-xs sm:text-sm disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            className="bg-violet-500/10 hover:bg-violet-500/20 backdrop-blur-sm text-violet-300 hover:text-violet-200 font-medium py-2 px-3 sm:px-4 rounded-lg border border-violet-500/30 hover:border-violet-500/50 shadow transition-all duration-200 text-xs sm:text-sm cursor-pointer"
           >
             {label}
           </button>
