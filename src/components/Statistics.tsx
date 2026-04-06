@@ -1,20 +1,10 @@
 import { useStats } from "../hooks/useStats";
 import { useTodos } from "../hooks/useTodos";
-import { forwardRef } from "react";
+import { formatTimeVerbose } from "../utils/formatTime";
 
-// TODO: I think new React doesnt need / like the forwardRef anymore. Check.
-export const Statistics = forwardRef<HTMLDivElement>((_props, ref) => {
+export function Statistics({ ref }: { ref?: React.Ref<HTMLDivElement> }) {
   const { stats } = useStats();
   const { todos } = useTodos();
-
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-  };
 
   const tasksLeft = todos.filter((t) => !t.completed).length;
   const tasksCompleted = todos.filter((t) => t.completed).length;
@@ -22,7 +12,7 @@ export const Statistics = forwardRef<HTMLDivElement>((_props, ref) => {
   const statItems = [
     {
       label: "Time Worked",
-      value: formatTime(stats.totalTimeWorked),
+      value: formatTimeVerbose(stats.totalTimeWorked),
       icon: "⏱️",
     },
     {
@@ -68,7 +58,4 @@ export const Statistics = forwardRef<HTMLDivElement>((_props, ref) => {
       </div>
     </div>
   );
-});
-
-// TODO: Necessary?
-Statistics.displayName = "Statistics";
+}

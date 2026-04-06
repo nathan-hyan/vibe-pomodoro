@@ -7,15 +7,11 @@ import { Statistics } from "./components/Statistics";
 import { SettingsModal } from "./components/SettingsModal";
 import { useEffect, useRef, useState } from "react";
 import { attachGlowEffect } from "./utils/glowEffect";
-import { TodoProvider } from "./contexts/TodoContext";
-import { StatsProvider } from "./contexts/StatsContext";
 import { useStats } from "./hooks/useStats";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
 
 const POMODORO_TIME = 25 * 60; // 25 minutes in seconds
 
-function AppContent() {
+function App() {
   const [state, controls] = usePomodoro(POMODORO_TIME);
   const { sessionCompletedTasks, resetStats } = useStats();
   const [showSettings, setShowSettings] = useState(false);
@@ -44,13 +40,11 @@ function AppContent() {
     };
   }, []);
 
-  // TODO: Move Provider to root level (main.tsx)
   // TODO: Nice to have i18n support
   // TODO: Set design and create reusable buttons in a separate component
   // TODO: Move modals to a reusable component and reuse them both in <CompletionModal /> and <SettingsModal />
   return (
     <>
-      <TodoProvider>
         {state.showCompletionModal && (
           <CompletionModal
             onClose={controls.dismissModal}
@@ -126,20 +120,7 @@ function AppContent() {
             </div>
           </div>
         </div>
-      </TodoProvider>
     </>
-  );
-}
-
-// TODO: Move providers to main.tsx
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <StatsProvider>
-        <AppContent />
-      </StatsProvider>
-    </QueryClientProvider>
   );
 }
 

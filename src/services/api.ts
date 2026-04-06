@@ -1,12 +1,6 @@
-import type { Todo } from "../contexts/TodoContextDefinition";
+import type { Todo, Stats } from "../types";
+export type { Stats };
 import API_URL from "../utils/getApiUrl";
-
-// Stats interface
-export interface Stats {
-  totalTimeWorked: number;
-  completedSessions: number;
-  completedTasks: number;
-}
 
 // Generic fetch wrapper with error handling
 async function fetchApi<T>(

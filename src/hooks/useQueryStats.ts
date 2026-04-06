@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "../services/api";
 import type { Stats } from "../services/api";
 
@@ -11,7 +11,7 @@ export const statsKeys = {
 // ============ QUERIES ============
 
 export function useStatsQuery() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: statsKeys.detail(),
     queryFn: api.getStats,
   });

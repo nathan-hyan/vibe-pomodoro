@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "../services/api";
-import type { Todo } from "../contexts/TodoContextDefinition";
+import type { Todo } from "../types";
 
 // Query keys
 export const todoKeys = {
@@ -14,7 +14,7 @@ export const todoKeys = {
 // ============ QUERIES ============
 
 export function useTodosQuery() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: todoKeys.lists(),
     queryFn: api.getTodos,
   });

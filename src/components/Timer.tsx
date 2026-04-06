@@ -1,5 +1,7 @@
 import type { PomodoroState, PomodoroControls } from "../types";
 import { useState, useRef, useEffect } from "react";
+import clsx from "clsx";
+import { formatTime } from "../utils/formatTime";
 
 interface TimerProps {
   state: PomodoroState;
@@ -11,15 +13,6 @@ export function Timer({ state, controls }: TimerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // TODO: Move to utils.ts file
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
 
   const handleClick = () => {
     if (!isRunning) {
@@ -162,18 +155,17 @@ export function Timer({ state, controls }: TimerProps) {
               value={inputValue}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              onKeyPress={handleKeyPress} // TODO: Deprecated? Use onKeyDown instead
+              onKeyDown={handleKeyPress}
               className="text-5xl sm:text-7xl font-bold text-white drop-shadow-2xl mb-2 bg-transparent border-none outline-none text-center w-48 sm:w-64"
               placeholder="MM:SS"
             />
           ) : (
             <div
               onClick={handleClick}
-              className={`text-5xl sm:text-7xl font-bold text-white drop-shadow-2xl mb-2 ${
-                !isRunning
-                  ? "cursor-pointer hover:text-violet-300 transition-colors"
-                  : ""
-              }`} // TODO: Use classNames
+              className={clsx(
+                "text-5xl sm:text-7xl font-bold text-white drop-shadow-2xl mb-2",
+                !isRunning && "cursor-pointer hover:text-violet-300 transition-colors"
+              )}
               title={!isRunning ? "Click to edit time" : ""}
             >
               {formatTime(timeLeft)}
