@@ -37,7 +37,7 @@ export function useCreateTodoMutation() {
       // Optimistically update to the new value
       queryClient.setQueryData<Todo[]>(todoKeys.lists(), (old = []) => [
         ...old,
-        { ...newTodo, id: `temp-${Date.now()}` } as Todo,
+        { ...newTodo, id: `temp-${Date.now()}` },
       ]);
 
       return { previousTodos };
@@ -115,22 +115,27 @@ export function useReorderTodosMutation() {
 
   return useMutation({
     mutationFn: api.reorderTodos,
-    onMutate: async (newTodos) => {
+    onMutate: async (reorderedTodos) => {
       await queryClient.cancelQueries({ queryKey: todoKeys.lists() });
 
       const previousTodos = queryClient.getQueryData<Todo[]>(todoKeys.lists());
 
-      queryClient.setQueryData<Todo[]>(todoKeys.lists(), newTodos);
+      // Merge reordered todos back into the full list
+      queryClient.setQueryData<Todo[]>(todoKeys.lists(), (old = []) => {
+        const reorderedIds = new Set(reorderedTodos.map((t) => t.id));
+        const untouched = old.filter((t) => !reorderedIds.has(t.id));
+        return [...untouched, ...reorderedTodos].sort((a, b) => a.order - b.order);
+      });
 
       return { previousTodos };
     },
-    onError: (_err, _newTodos, context) => {
+    onError: (_err, _reorderedTodos, context) => {
       if (context?.previousTodos) {
         queryClient.setQueryData(todoKeys.lists(), context.previousTodos);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: todoKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: todoKeys.lists(), refetchType: "none" });
     },
   });
 }

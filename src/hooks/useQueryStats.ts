@@ -1,11 +1,16 @@
 import { useMutation, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "../services/api";
-import type { Stats } from "../services/api";
+import type { Stats, StatEntry } from "../services/api";
 
 // Query keys
 export const statsKeys = {
   all: ["stats"] as const,
   detail: () => [...statsKeys.all, "detail"] as const,
+};
+
+export const statEntriesKeys = {
+  all: ["statEntries"] as const,
+  list: () => [...statEntriesKeys.all, "list"] as const,
 };
 
 // ============ QUERIES ============
@@ -127,6 +132,68 @@ export function useAddCompletedSessionMutation() {
         totalTimeWorked: currentStats.totalTimeWorked + duration,
         completedSessions: currentStats.completedSessions + 1,
       });
+    },
+  });
+}
+
+// ============ STAT ENTRIES ============
+
+export function useStatEntriesQuery() {
+  return useSuspenseQuery({
+    queryKey: statEntriesKeys.list(),
+    queryFn: api.getStatEntries,
+  });
+}
+
+export function useCreateStatEntryMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: api.createStatEntry,
+    onMutate: async (newEntry) => {
+      await queryClient.cancelQueries({ queryKey: statEntriesKeys.list() });
+
+      const previousEntries = queryClient.getQueryData<StatEntry[]>(statEntriesKeys.list());
+
+      queryClient.setQueryData<StatEntry[]>(statEntriesKeys.list(), (old = []) => [
+        ...old,
+        { ...newEntry, id: `temp-${Date.now()}` },
+      ]);
+
+      return { previousEntries };
+    },
+    onError: (_err, _newEntry, context) => {
+      if (context?.previousEntries) {
+        queryClient.setQueryData(statEntriesKeys.list(), context.previousEntries);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: statEntriesKeys.list(), refetchType: "none" });
+    },
+  });
+}
+
+export function useDeleteAllStatEntriesMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: api.deleteAllStatEntries,
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: statEntriesKeys.list() });
+
+      const previousEntries = queryClient.getQueryData<StatEntry[]>(statEntriesKeys.list());
+
+      queryClient.setQueryData<StatEntry[]>(statEntriesKeys.list(), []);
+
+      return { previousEntries };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousEntries) {
+        queryClient.setQueryData(statEntriesKeys.list(), context.previousEntries);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: statEntriesKeys.list(), refetchType: "none" });
     },
   });
 }

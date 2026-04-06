@@ -24,7 +24,7 @@ src/
 ├── components/
 │   ├── Timer.tsx            # SVG circular progress + editable time display
 │   ├── Controls.tsx         # Start/Pause/Reset + time adjustment buttons
-│   ├── TodoList.tsx         # Task input (local state) + draggable list
+│   ├── TodoList.tsx         # 3-section task list (working/pending/completed) + inline edit + drag
 │   ├── Statistics.tsx       # Stats dashboard (React 19 ref-as-prop)
 │   ├── CompletionModal.tsx  # Session complete overlay with extend options
 │   └── SettingsModal.tsx    # Reset stats, export/import data
@@ -41,9 +41,10 @@ src/
 ├── lib/
 │   └── queryClient.ts       # QueryClient config (1min stale, 3 retries, no refetch on focus)
 ├── types/
-│   └── index.ts             # Todo, Stats, PomodoroState, PomodoroControls interfaces
+│   └── index.ts             # Todo, TodoStatus, Stats, StatEntry, StatEntryType, PomodoroState, PomodoroControls
 └── utils/
     ├── alarmSound.ts        # Web Audio API: task chime + session alarm
+    ├── dateFilters.ts       # isToday, isThisWeek, isThisMonth for stat entries
     ├── formatTime.ts        # formatTime (MM:SS) + formatTimeVerbose (Xh Ym)
     ├── getApiUrl.ts         # Dynamic API URL (VITE_API_URL → window.location fallback)
     └── glowEffect.ts        # Mouse-tracking CSS variable updater for glow effects
@@ -89,12 +90,112 @@ src/
 
 ```json
 {
-  "todos": [{ "id": "string", "text": "string", "completed": boolean, "order": number }],
-  "stats": { "totalTimeWorked": number, "completedSessions": number, "completedTasks": number }
+  "todos": [{ "id": "string", "text": "string", "status": "working"|"pending"|"completed", "order": number }],
+  "stats": { "totalTimeWorked": number, "completedSessions": number, "completedTasks": number },
+  "statEntries": [{ "id": "string", "type": "session"|"task", "value": number, "timestamp": "ISO 8601" }]
 }
 ```
 
-`stats` is a singular resource in JSON Server (not an array), updated via `PUT`.
+- `stats` is a singular resource in JSON Server (not an array), updated via `PUT`. Stores all-time aggregate totals.
+- `statEntries` is a collection (array) of timestamped events. Each entry records a session completion (`type: "session"`, `value` = duration in seconds) or task completion/uncompletion (`type: "task"`, `value` = 1 or -1). Used for day/week/month breakdowns.
+
+## Focus Tasks Feature — ✅ IMPLEMENTED
+
+### Data Model
+```ts
+type TodoStatus = "working" | "pending" | "completed";
+interface Todo { id: string; text: string; status: TodoStatus; order: number; }
+```
+
+Replaced old `completed: boolean` with `status: TodoStatus` enum + `order: number` for priority ordering.
+
+### Three-Section Layout
+```
+--- Currently working on ---   (status: "working")  ← tasks actively being worked on
+--- Next tasks ---             (status: "pending")   ← queued, ordered by priority
+--- Finished ---               (status: "completed") ← done, shown at bottom
+```
+- New tasks land in "Next tasks" (`status: "pending"`)
+- Users promote/demote between "working" ↔ "pending" via ▲/▼ buttons
+- Checkbox completes (→ "Finished") or uncompletes (→ "Next tasks")
+- Empty sections are hidden automatically
+- Drag-and-drop reorder within "working" and "pending" only; completed not draggable
+
+### Hook API (`useTodos`)
+- `addTodo(text)` — creates pending todo, trims whitespace, rejects empty
+- `deleteTodo(id)` — removes from any section
+- `editTodo(id, newText)` — updates text, trims, rejects empty
+- `completeTodo(id)` — marks completed, plays chime, increments stats, adds session task
+- `uncompleteTodo(id)` — marks pending, decrements stats, removes session task
+- `promoteToWorking(id)` — pending → working (no chime)
+- `demoteFromWorking(id)` — working → pending (no chime)
+- `reorderTodos(sectionTodos, from, to)` — reorders within a section
+- Computed: `workingTodos`, `pendingTodos`, `completedTodos` (sorted by `order`)
+
+### UI (`TodoList.tsx`)
+- Inline editing: double-click text → input, Enter/blur saves, Escape cancels
+- Delete via ✕ button (always visible per UX preference — hover-hidden buttons are easy to miss)
+- Promote/demote via ▲/▼ buttons (always visible)
+
+### Design Notes
+- Action buttons (delete ✕, promote ▲, demote ▼) are **always visible** rather than hover-revealed. This is a deliberate UX choice — hover-gated actions are discoverable only by accident and unusable on touch devices.
+- The `db.json` may contain legacy todos with `completed: boolean` from before the migration. The app only reads `status`; those old records will render but won't sort into any section (they lack a valid `status`). Clean them up manually or re-seed `db.json`.
+- `reorderTodos` fires N individual PATCH requests — acceptable for a small todo list but would need batching for scale.
+- `order` values can have gaps after deletions; this is harmless since only relative ordering matters.
+
+### Tests
+- **52 unit tests** in `src/test/todos.test.tsx` (Vitest + React Testing Library)
+- **9 E2E tests** in `e2e/todos.spec.ts` (Playwright)
+- Integration plan: `docs/FOCUS_TASKS_PLAN.md`
+
+## Statistics Feature — ✅ IMPLEMENTED
+
+### Data Model
+```ts
+type StatEntryType = "session" | "task";
+interface StatEntry { id: string; type: StatEntryType; value: number; timestamp: string; }
+```
+
+Added `statEntries` event log alongside the existing `stats` aggregate. Dual-write pattern: every session/task event updates both the aggregate and creates a timestamped entry.
+
+### Time-Based Metrics
+- **Default display**: shows today's values for Time Worked, Sessions Done, Tasks Done
+- **Hover expansion**: each of the three metrics expands to show Today / This Week / This Month
+- **Tasks Left**: simple count of non-completed todos (not time-based)
+- Date filtering via `src/utils/dateFilters.ts`: `isToday()`, `isThisWeek()`, `isThisMonth()`
+
+### Component Architecture (`Statistics.tsx`)
+- `ExpandableStatRow` — manages hover state, toggles between single-value and 3-period expanded view
+- `SimpleStatRow` — non-expandable row (used for Tasks Left)
+- `data-expandable` attribute on expandable rows for test targeting
+
+### Hook API (`useStats`)
+- `dayStats: PeriodStats` — `{ timeWorked, sessions, tasks }` for today
+- `weekStats: PeriodStats` — for current week (Monday–Sunday)
+- `monthStats: PeriodStats` — for current calendar month
+- `statEntries: StatEntry[]` — raw event log
+- `addCompletedSession(duration)` — updates aggregate + creates session entry
+- `incrementCompletedTasks()` — updates aggregate + creates task entry (value: 1)
+- `decrementCompletedTasks()` — updates aggregate + creates task entry (value: -1)
+- `resetStats()` — resets aggregate to zeros + deletes all entries + clears session tasks
+
+### Settings
+- Reset All Statistics (existing button) now also clears `statEntries` collection
+- Confirmation via `window.confirm` before reset
+
+### Tests
+- **25 unit tests** in `src/test/statistics.test.tsx` (Vitest + React Testing Library)
+- **9 E2E tests** in `e2e/statistics.spec.ts` (Playwright)
+- Integration plan: `docs/STATISTICS_PLAN.md`
+
+### Files Changed
+- `src/types/index.ts` — `StatEntry`, `StatEntryType` types
+- `src/services/api.ts` — `getStatEntries`, `createStatEntry`, `deleteAllStatEntries`
+- `src/utils/dateFilters.ts` — **New** — date filtering utilities
+- `src/hooks/useQueryStats.ts` — stat entries query/mutations
+- `src/hooks/useStats.ts` — `PeriodStats` type, `computePeriodStats`, day/week/month computed values, dual-write on events
+- `src/components/Statistics.tsx` — full rewrite with `ExpandableStatRow`/`SimpleStatRow`
+- `db.json` — added `statEntries: []`
 
 ## Existing TODOs Left by the Author
 
@@ -130,7 +231,7 @@ Collected from source code comments:
 - **Timer drift**: `setInterval` with 1s ticks will drift over long sessions. A `Date.now()`-based approach (checking elapsed time each tick) would be more accurate.
 - ~~**Unused dependencies**: `apisauce` — **FIXED**: removed package and dead service files.~~
 - ~~**`VITE_API_URL` env var is ignored** — **FIXED**: `getApiUrl.ts` now reads `import.meta.env.VITE_API_URL` first, falling back to dynamic resolution.~~
-- ~~**No tests**: Zero test files. No test runner configured.~~ — **FIXED**: Vitest (unit) + Playwright (E2E) configured. 32 unit tests + 10 E2E tests for the Pomodoro timer.
+- ~~**No tests**: Zero test files. No test runner configured.~~ — **FIXED**: Vitest (unit) + Playwright (E2E) configured. 109 unit tests (32 pomodoro + 52 todos + 25 statistics) + 28 E2E tests (10 pomodoro + 9 todos + 9 statistics).
 - **No routing**: Single-page app with no router. If features grow (e.g., separate stats page, settings page), a router will be needed.
 - **Drag & drop is basic**: Uses native HTML5 drag events. On mobile/touch this won't work. Consider `@dnd-kit` or similar for touch support.
 - **`reorderTodos`** fires N PATCH requests (one per todo). This is a known limitation noted in the code — could be slow with many todos.
@@ -178,7 +279,7 @@ Collected from source code comments:
 
 ### Reliability & Testing
 21. **Fix timer drift** — replace `setInterval` counting with `Date.now()`-based elapsed time checking.
-22. ~~**Add unit tests**~~ — **DONE**: Vitest + React Testing Library + jsdom. 32 tests covering all timer scenarios (start, stop, pause, resume, time adjustments, custom input, completion modal + chime).
+22. ~~**Add unit tests**~~ — **DONE**: Vitest + React Testing Library + jsdom. 84 tests total (32 pomodoro timer + 52 focus tasks).
 23. ~~**Add E2E tests**~~ — **DONE**: Playwright (Chromium). 10 tests covering the same scenarios against the real app.
 
 ### Infrastructure

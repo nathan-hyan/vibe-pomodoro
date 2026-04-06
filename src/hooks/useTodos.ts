@@ -7,6 +7,7 @@ import {
 } from "./useQueryTodos";
 import { useStats } from "./useStats";
 import { playTaskCompleteChime } from "../utils/alarmSound";
+import type { Todo } from "../types";
 
 export function useTodos() {
   const { data: todos } = useTodosQuery(); // guaranteed non-undefined by useSuspenseQuery
@@ -22,52 +23,116 @@ export function useTodos() {
     removeSessionTask,
   } = useStats();
 
+  // Computed section arrays
+  const workingTodos = todos
+    .filter((t) => t.status === "working")
+    .sort((a, b) => a.order - b.order);
+  const pendingTodos = todos
+    .filter((t) => t.status === "pending")
+    .sort((a, b) => a.order - b.order);
+  const completedTodos = todos
+    .filter((t) => t.status === "completed")
+    .sort((a, b) => a.order - b.order);
+
   const addTodo = (text: string) => {
-    if (text.trim()) {
-      createTodoMutation.mutate({
-        text: text.trim(),
-        completed: false,
-      });
-    }
-  };
+    const trimmed = text.trim();
+    if (!trimmed) return;
 
-  const toggleTodo = (id: string) => {
-    const todo = todos.find((t) => t.id === id);
-    if (!todo) return;
-
-    const newCompleted = !todo.completed;
-
-    updateTodoMutation.mutate({
-      id,
-      updates: { completed: newCompleted },
+    const maxOrder = todos.reduce((max, t) => Math.max(max, t.order), -1);
+    createTodoMutation.mutate({
+      text: trimmed,
+      status: "pending",
+      order: maxOrder + 1,
     });
-
-    if (newCompleted && !todo.completed) {
-      playTaskCompleteChime();
-      incrementCompletedTasks();
-      addSessionTask(todo.text);
-    } else if (!newCompleted && todo.completed) {
-      decrementCompletedTasks();
-      removeSessionTask(todo.text);
-    }
   };
 
   const deleteTodo = (id: string) => {
     deleteTodoMutation.mutate(id);
   };
 
-  const reorderTodos = (startIndex: number, endIndex: number) => {
-    const result = Array.from(todos);
+  const editTodo = (id: string, newText: string) => {
+    const trimmed = newText.trim();
+    if (!trimmed) return;
+
+    updateTodoMutation.mutate({
+      id,
+      updates: { text: trimmed },
+    });
+  };
+
+  const completeTodo = (id: string) => {
+    const todo = todos.find((t) => t.id === id);
+    if (!todo || todo.status === "completed") return;
+
+    updateTodoMutation.mutate({
+      id,
+      updates: { status: "completed" },
+    });
+
+    try {
+      playTaskCompleteChime();
+    } catch {
+      // Web Audio API may not be available in tests
+    }
+    incrementCompletedTasks();
+    addSessionTask(todo.text);
+  };
+
+  const uncompleteTodo = (id: string) => {
+    const todo = todos.find((t) => t.id === id);
+    if (!todo || todo.status !== "completed") return;
+
+    updateTodoMutation.mutate({
+      id,
+      updates: { status: "pending" },
+    });
+
+    decrementCompletedTasks();
+    removeSessionTask(todo.text);
+  };
+
+  const promoteToWorking = (id: string) => {
+    const todo = todos.find((t) => t.id === id);
+    if (!todo || todo.status !== "pending") return;
+
+    updateTodoMutation.mutate({
+      id,
+      updates: { status: "working" },
+    });
+  };
+
+  const demoteFromWorking = (id: string) => {
+    const todo = todos.find((t) => t.id === id);
+    if (!todo || todo.status !== "working") return;
+
+    updateTodoMutation.mutate({
+      id,
+      updates: { status: "pending" },
+    });
+  };
+
+  const reorderTodos = (sectionTodos: Todo[], startIndex: number, endIndex: number) => {
+    const result = Array.from(sectionTodos);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    reorderTodosMutation.mutate(result);
+
+    // Reassign order values
+    const reordered = result.map((todo, index) => ({ ...todo, order: index }));
+    reorderTodosMutation.mutate(reordered);
   };
 
   return {
     todos,
+    workingTodos,
+    pendingTodos,
+    completedTodos,
     addTodo,
-    toggleTodo,
     deleteTodo,
+    editTodo,
+    completeTodo,
+    uncompleteTodo,
+    promoteToWorking,
+    demoteFromWorking,
     reorderTodos,
   };
 }

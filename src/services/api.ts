@@ -1,5 +1,5 @@
-import type { Todo, Stats } from "../types";
-export type { Stats };
+import type { Todo, Stats, StatEntry } from "../types";
+export type { Stats, StatEntry };
 import API_URL from "../utils/getApiUrl";
 
 // Generic fetch wrapper with error handling
@@ -30,7 +30,8 @@ async function fetchApi<T>(
 // ============ TODO API ============
 
 export async function getTodos(): Promise<Todo[]> {
-  return fetchApi<Todo[]>("/todos");
+  const todos = await fetchApi<Todo[]>("/todos");
+  return todos.sort((a, b) => a.order - b.order);
 }
 
 export async function createTodo(todo: Omit<Todo, "id">): Promise<Todo> {
@@ -95,6 +96,30 @@ export async function resetStats(): Promise<Stats> {
       completedTasks: 0,
     }),
   });
+}
+
+// ============ STAT ENTRIES API ============
+
+export async function getStatEntries(): Promise<StatEntry[]> {
+  return fetchApi<StatEntry[]>("/statEntries");
+}
+
+export async function createStatEntry(
+  entry: Omit<StatEntry, "id">
+): Promise<StatEntry> {
+  return fetchApi<StatEntry>("/statEntries", {
+    method: "POST",
+    body: JSON.stringify(entry),
+  });
+}
+
+export async function deleteAllStatEntries(): Promise<void> {
+  const entries = await getStatEntries();
+  await Promise.all(
+    entries.map((entry) =>
+      fetchApi(`/statEntries/${entry.id}`, { method: "DELETE" })
+    )
+  );
 }
 
 // ============ EXPORT/IMPORT ============
