@@ -158,14 +158,23 @@ Data is stored in the mounted volume path. The database structure is:
 
 ```json
 {
-  "todos": [],
+  "todos": [
+    { "id": "string", "text": "string", "status": "working|pending|completed", "order": 0 }
+  ],
   "stats": {
     "totalTimeWorked": 0,
     "completedSessions": 0,
     "completedTasks": 0
-  }
+  },
+  "statEntries": [
+    { "id": "string", "type": "session|task", "value": 0, "timestamp": "ISO 8601" }
+  ]
 }
 ```
+
+- **`todos`**: Tasks with a `status` field (`"working"`, `"pending"`, or `"completed"`) and `order` for sorting
+- **`stats`**: All-time aggregate counters
+- **`statEntries`**: Timestamped event log for time-based breakdowns (today/week/month)
 
 ### Backup and Restore
 
@@ -216,7 +225,9 @@ ports:
 
 ## Development Notes
 
-- The app uses optimistic UI updates for better UX
-- All API calls automatically retry on failure
-- Stats are persisted immediately on each change
-- Todos support drag-and-drop reordering (persisted to API)
+- The app uses **optimistic UI updates** with rollback on all mutations
+- All API calls automatically retry on failure (3 retries via React Query)
+- Stats use a **dual-write pattern**: every event updates both the aggregate (`stats`) and creates a timestamped entry (`statEntries`)
+- Todos use a **three-section layout** (working / pending / completed) with drag-and-drop reordering within sections
+- The API URL is resolved dynamically at runtime — `VITE_API_URL` env var takes priority, otherwise it uses the browser's current hostname with port 3001
+- See **[CLAUDE.md](./CLAUDE.md)** for full architecture details and codebase conventions

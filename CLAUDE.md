@@ -75,7 +75,7 @@ src/
 ### API Layer
 
 - `src/services/api.ts` — single `fetchApi<T>()` wrapper over native `fetch`. Handles todos CRUD, stats CRUD, and bulk export/import.
-- `src/utils/getApiUrl.ts` — runtime URL resolution: localhost:3001 in dev, same-hostname:3001 in production. The `VITE_API_URL` env var mentioned in docs is **not actually read** by this function — it purely checks `window.location`.
+- `src/utils/getApiUrl.ts` — runtime URL resolution: checks `import.meta.env.VITE_API_URL` first, falls back to localhost:3001 in dev, same-hostname:3001 in production.
 - **Optimistic updates** on all mutations via React Query's `onMutate`/`onError` rollback pattern.
 
 ### Timer Logic (`usePomodoro`)
@@ -197,94 +197,9 @@ Added `statEntries` event log alongside the existing `stats` aggregate. Dual-wri
 - `src/components/Statistics.tsx` — full rewrite with `ExpandableStatRow`/`SimpleStatRow`
 - `db.json` — added `statEntries: []`
 
-## Existing TODOs Left by the Author
+## TODOs, Known Issues & Roadmap
 
-Collected from source code comments:
-
-1. **`App.tsx:22`** — Consider extracting glow effect setup into a custom hook or wrapper container
-2. ~~**`App.tsx:47`** — Move providers to root level (`main.tsx`)~~ — **DONE**: Providers moved; then Context layer eliminated entirely.
-3. **`App.tsx:43`** — i18n support (nice to have)
-4. **`App.tsx:44`** — Create a design system with reusable button components
-5. **`App.tsx:45`** — Unify modal components (`CompletionModal` and `SettingsModal` share structure)
-6. ~~**`TodoContext.tsx:17-19`** — Use proper UUID generation instead of `Date.now()`, text capitalization, Zod validation~~ — Context deleted; UUID/validation TODOs remain relevant for `useTodos.ts`.
-7. **`usePomodoro.ts:23`** — Extract timer logic to a separate util
-8. **`usePomodoro.ts:50`** — Create a modal hook with show/toggle
-9. ~~**`Timer.tsx:15`** — Move `formatTime` to utils~~ — **DONE** (previous session)
-10. ~~**`Timer.tsx:165`** — `onKeyPress` is deprecated, use `onKeyDown`~~ — **DONE** (previous session)
-11. ~~**`Timer.tsx:176`** — Use a `classNames` utility (e.g., clsx/cn)~~ — **DONE** (previous session)
-12. ~~**`TodoList.tsx:50`** — Same `onKeyPress` deprecation~~ — **DONE** (previous session)
-13. ~~**`Statistics.tsx:5`** — React 19 may not need `forwardRef`~~ — **DONE**: Replaced with native `ref` prop.
-14. ~~**`Statistics.tsx:73`** — `displayName` may be unnecessary~~ — **DONE**: Removed with `forwardRef`.
-15. ~~**`useStats.ts:4`** — Consider renaming `useStats` → `useStatistics`~~ — Kept as `useStats` (short, clear).
-
-## Assumptions & Observations
-
-### Things That Work Well
-- **Optimistic UI** across all mutations is properly implemented with rollback
-- **Clean separation** between React Query hooks (`useQuery*`) and composing hooks (`useStats`/`useTodos`)
-- **Docker setup** is mature — multi-stage build, entrypoint script, CasaOS support, health checks
-- **Audio feedback** via Web Audio API (no external audio files needed)
-- **Glow effect** is a nice touch — mouse-tracking CSS variables for glassmorphism cards
-
-### Potential Issues / Areas for Improvement
-
-- **Timer drift**: `setInterval` with 1s ticks will drift over long sessions. A `Date.now()`-based approach (checking elapsed time each tick) would be more accurate.
-- ~~**Unused dependencies**: `apisauce` — **FIXED**: removed package and dead service files.~~
-- ~~**`VITE_API_URL` env var is ignored** — **FIXED**: `getApiUrl.ts` now reads `import.meta.env.VITE_API_URL` first, falling back to dynamic resolution.~~
-- ~~**No tests**: Zero test files. No test runner configured.~~ — **FIXED**: Vitest (unit) + Playwright (E2E) configured. 109 unit tests (32 pomodoro + 52 todos + 25 statistics) + 28 E2E tests (10 pomodoro + 9 todos + 9 statistics).
-- **No routing**: Single-page app with no router. If features grow (e.g., separate stats page, settings page), a router will be needed.
-- **Drag & drop is basic**: Uses native HTML5 drag events. On mobile/touch this won't work. Consider `@dnd-kit` or similar for touch support.
-- **`reorderTodos`** fires N PATCH requests (one per todo). This is a known limitation noted in the code — could be slow with many todos.
-- **No break timer**: Classic Pomodoro has a 5-min short break / 15-min long break cycle. This app only has the work timer.
-- ~~**`Stats` interface is duplicated** — **FIXED**: single source of truth in `src/types/index.ts`, re-exported from `api.ts`.~~
-- **Import deletes & recreates all todos**: The `importData` function nukes all existing todos then recreates them. IDs will change, which could cause issues if the app is open in another tab.
-- **No error UI**: API errors are caught and logged to console, but no toast/notification system exists for the user.
-- **Statistics component is hidden on mobile**: `lg:block hidden` on the stats section means mobile users can't see their stats.
-- ~~**`playAlarmSound` (looping version)** — **FIXED**: removed unused looping function from `alarmSound.ts`.~~
-- **`completedTasks` in stats vs in todos**: The stats counter (`completedTasks`) and the actual count of completed todos can diverge — stats counts all-time completions across sessions, while todos list only shows current tasks.
-
-## Potential Next Steps
-
-### Quick Wins (Low Effort, High Impact) — ✅ ALL DONE
-1. ~~**Replace deprecated `onKeyPress` with `onKeyDown`** — in `Timer.tsx` and `TodoList.tsx`.~~
-2. ~~**Remove unused `apisauce` dependency** — deleted `src/services/stats.ts`, `src/services/todos.ts`, uninstalled package.~~
-3. ~~**Remove unused `playAlarmSound` (looping)** — removed dead code from `alarmSound.ts`.~~
-4. ~~**Add `clsx` utility** — installed `clsx`, applied to `Timer.tsx` and `TodoList.tsx`.~~
-5. ~~**Move `formatTime` to a shared util** — created `src/utils/formatTime.ts` with `formatTime` and `formatTimeVerbose`.~~
-6. ~~**Fix `VITE_API_URL` env var** — `getApiUrl.ts` now reads `import.meta.env.VITE_API_URL` first, falls back to dynamic resolution.~~
-7. ~~**Deduplicate `Stats` interface** — single source of truth in `StatsContextDefinition.ts`, re-exported from `api.ts`.~~
-
-### Code Quality & Architecture — ✅ MAJOR REFACTOR DONE
-8. ~~**Move providers to `main.tsx`**~~ — **DONE**, then eliminated Context layer entirely.
-9. **Unify modal components** — `CompletionModal` and `SettingsModal` share the same backdrop/container pattern. Extract a reusable `Modal` shell.
-10. **Extract glow effect into a custom hook or wrapper** — the `useEffect` + refs pattern in `App.tsx` could be a `useGlowEffect(ref)` hook or a `<GlowCard>` component.
-11. **Use proper UUID generation** — `Date.now().toString()` for todo IDs risks collisions. Use `crypto.randomUUID()`.
-12. **Add Zod validation** — validate API responses and form inputs (author TODO).
-13. ~~**React 19 `ref` as prop**~~ — **DONE**: `Statistics.tsx` uses native `ref` prop, `forwardRef` + `displayName` removed.
-
-### React 19 Modernization — ✅ DONE
-26. ~~**Drop `forwardRef`** — replaced with React 19 native `ref` as prop in `Statistics.tsx`.~~
-27. ~~**Eliminate Context layer** — removed `StatsContext`, `TodoContext`, and all 4 context files. `useStats`/`useTodos` now compose React Query hooks directly. Shared ephemeral state uses `useSyncExternalStore`.~~
-28. ~~**`useSuspenseQuery` + `<Suspense>`** — replaced `useQuery` with `useSuspenseQuery` in both query hooks. `<Suspense>` boundary in `main.tsx` handles loading.~~
-29. ~~**React Compiler audit** — codebase is fully compatible. No manual `useMemo`/`useCallback`/`React.memo`. Ref mutations only in effects/handlers.~~
-
-### Features
-14. **Break timer** — implement the classic Pomodoro cycle: 25 min work → 5 min short break → every 4th cycle: 15 min long break.
-15. **Mobile statistics** — currently hidden on mobile (`hidden lg:block`). Show in a collapsible section or bottom sheet.
-16. **Touch-friendly drag & drop** — native HTML5 drag doesn't work on mobile. Integrate `@dnd-kit` or `dnd-kit/sortable`.
-17. **Error toasts / notifications** — API errors are silent to the user. Add a toast system (e.g., `sonner` or `react-hot-toast`).
-18. **i18n support** — internationalization (author TODO, nice-to-have).
-19. **Browser notifications** — notify when timer completes even if the tab is in the background.
-20. **Keyboard shortcuts** — Space to start/pause, Escape to reset, etc.
-
-### Reliability & Testing
-21. **Fix timer drift** — replace `setInterval` counting with `Date.now()`-based elapsed time checking.
-22. ~~**Add unit tests**~~ — **DONE**: Vitest + React Testing Library + jsdom. 84 tests total (32 pomodoro timer + 52 focus tasks).
-23. ~~**Add E2E tests**~~ — **DONE**: Playwright (Chromium). 10 tests covering the same scenarios against the real app.
-
-### Infrastructure
-24. **Batch `reorderTodos`** — currently fires N PATCH requests. Consider a custom JSON Server route or switching to a single PUT of the full list.
-25. **Design system / component library** — extract reusable Button, Card, Input components to reduce Tailwind class duplication.
+All open TODOs, known issues, planned features, and technical debt are tracked in **[docs/ROADMAP.md](./docs/ROADMAP.md)**. Refer to that document when starting a new session.
 
 ## Commands
 
@@ -302,6 +217,7 @@ bun run test:e2e     # Playwright E2E (needs dev server running)
 
 ## Conventions
 
+- **Test-Driven Development (TDD) is mandatory** — every bugfix and new feature must start by writing or updating tests *before* implementing the change. Write a failing test that reproduces the bug or specifies the new behavior, then make it pass. This applies to both unit tests (Vitest) and E2E tests (Playwright) as appropriate. Never skip tests.
 - **No component library** — all UI is hand-crafted with Tailwind utility classes
 - **Emoji icons** throughout (no icon library)
 - **Glass morphism** design language with violet/purple gradients on a dark background

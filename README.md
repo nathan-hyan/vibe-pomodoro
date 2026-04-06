@@ -4,12 +4,13 @@ A beautiful, modern Pomodoro timer with todo list management and statistics trac
 
 ## ✨ Features
 
-- **Pomodoro Timer**: 25-minute focused work sessions
-- **Todo Management**: Create, complete, and reorder tasks with drag & drop
-- **Statistics Tracking**: Monitor your productivity with session and task completion stats
-- **Persistent Storage**: All data saved via JSON Server API
-- **Export/Import**: Backup and restore your data anytime
-- **Beautiful UI**: Modern gradient design with smooth animations
+- **Pomodoro Timer**: 25-minute focused work sessions with editable time display
+- **Focus Tasks**: Three-section task management (Currently working on / Next tasks / Finished) with inline editing, promote/demote, and drag & drop reordering
+- **Time-Based Statistics**: Track time worked, sessions done, and tasks done — with today / this week / this month breakdowns on hover
+- **Persistent Storage**: All data saved via JSON Server API (not localStorage)
+- **Export/Import**: Backup and restore your data anytime via Settings
+- **Beautiful UI**: Glassmorphism design with violet gradients, mouse-tracking glow effects, and smooth animations
+- **Audio Feedback**: Web Audio API chimes on task completion and alarm on session end
 - **Docker Ready**: Easy deployment to Docker, CasaOS, and other container platforms
 
 ## 🚀 Quick Start
@@ -37,11 +38,13 @@ See **[SETUP.md](./SETUP.md)** for detailed instructions on:
 
 ## 📦 Tech Stack
 
-- **Frontend**: React 19 + TypeScript + Vite
-- **Styling**: TailwindCSS 4
-- **Backend**: JSON Server (for persistent data storage)
-- **Build Tool**: Vite with Rolldown
-- **Type Safety**: TypeScript with strict mode
+- **Frontend**: React 19 + TypeScript + Vite (with Rolldown)
+- **Styling**: TailwindCSS 4 (CSS-first config)
+- **State Management**: TanStack Query (React Query v5) + `useSyncExternalStore`
+- **Backend**: JSON Server (REST API, persistent `db.json`)
+- **Optimization**: React Compiler via `babel-plugin-react-compiler`
+- **Testing**: Vitest + React Testing Library (unit) / Playwright (E2E)
+- **Package Manager**: Bun (npm also supported)
 
 ## 💾 Data Persistence
 
@@ -67,69 +70,14 @@ For CasaOS deployment, use the included `docker-compose.casaos.yml` file. See [S
 
 ## 📝 Development
 
-This project uses:
-
-- **React Compiler**: Enabled for automatic optimization
-- **Bun**: Fast package manager and runtime (optional)
-- **ESLint**: Configured with strict TypeScript rules
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```bash
+bun install          # Install dependencies
+bun run dev          # Start dev servers (JSON Server :3001 + Vite :5173)
+bun run build        # TypeScript check + Vite production build
+bun run lint         # ESLint
+bun run test         # Vitest in watch mode
+bun run test:unit    # Vitest single run
+bun run test:e2e     # Playwright E2E (needs dev server running)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
-
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+See **[CLAUDE.md](./CLAUDE.md)** for detailed architecture, conventions, and codebase guide.
