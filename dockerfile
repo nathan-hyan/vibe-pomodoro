@@ -32,18 +32,18 @@ COPY --from=prerelease /usr/src/app/package.json .
 # Create data directory for persistent storage
 RUN mkdir -p /data
 
-# Copy default db.json template
-COPY --from=prerelease /usr/src/app/db.json /data/db.json.template
+# Copy default db.json template (stored outside /data so bind mounts don't shadow it)
+COPY --from=prerelease /usr/src/app/db.json /app/db.json.template
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh && chown -R node:node /data
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Environment variables
 ENV DB_PATH=/data/db.json
 
 # run the app (both JSON Server and Vite preview)
-USER node
+# Note: runs as root so the entrypoint can fix bind-mount permissions on /data
 EXPOSE 4173/tcp
 EXPOSE 3001/tcp
 
